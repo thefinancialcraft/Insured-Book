@@ -4,7 +4,6 @@ import { StatsCards } from "@/components/StatsCards";
 import { ExpiryAlerts } from "@/components/ExpiryAlerts";
 import { QuickActions } from "@/components/QuickActions";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -12,13 +11,6 @@ const Dashboard = () => {
   const handleAddCustomer = () => {
     navigate("/registration");
   };
-
-
-  useEffect(() => {
-    if (!localStorage.getItem("isLoggedIn")) {
-      navigate("/login");
-    }
-  }, [navigate]);
 
   const handleStatsClick = (type: string) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });

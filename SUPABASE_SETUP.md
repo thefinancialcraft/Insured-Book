@@ -59,6 +59,16 @@ VITE_SUPABASE_ANON_KEY=your_anon_key_here
    - `http://localhost:8082/auth/callback`
    - `http://localhost:8082/`
 
+### Step 4: Configure Production URLs
+
+1. In your Supabase dashboard, go to **Authentication** → **URL Configuration**
+2. Add these additional redirect URLs for production:
+   - `https://insured-book.vercel.app/auth/callback`
+   - `https://insured-book.vercel.app/`
+   - `https://insured-book.vercel.app/reset-password`
+   - `https://insured-book.vercel.app/complete-profile`
+3. Save the configuration
+
 ## 6. Setup Password Reset
 
 ### Step 1: Configure Email Templates

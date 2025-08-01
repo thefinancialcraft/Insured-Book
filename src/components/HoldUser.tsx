@@ -129,8 +129,26 @@ const HoldUser = () => {
             if (error) {
                 setError("Failed to activate account.");
             } else {
-                // Redirect to dashboard
-                navigate("/");
+                console.log("Account activated successfully, updating local state");
+
+                // Update local state immediately
+                setProfile(prev => prev ? {
+                    ...prev,
+                    status: 'active',
+                    hold_days: null,
+                    hold_start_date: null,
+                    hold_end_date: null,
+                    status_reason: `Account activated by user on ${new Date().toLocaleString()}`
+                } : null);
+
+                console.log("Local state updated, redirecting to dashboard in 500ms");
+
+                // Clear the last redirect path to prevent AuthGuard from redirecting back
+                // Wait a moment for the update to propagate, then redirect
+                setTimeout(() => {
+                    console.log("Redirecting to dashboard now");
+                    navigate("/", { replace: true });
+                }, 500);
             }
         } catch (error) {
             setError("An error occurred while activating account.");
@@ -161,17 +179,22 @@ const HoldUser = () => {
                         filter: `user_id=eq.${user.id}`
                     },
                     (payload) => {
+                        console.log("Profile updated via real-time:", payload.new);
                         setProfile(payload.new as UserProfile);
 
                         // If status changes from hold, redirect appropriately
                         if (payload.new.status === 'active') {
-                            navigate("/");
+                            console.log("Status changed to active, redirecting to dashboard");
+                            navigate("/", { replace: true });
                         } else if (payload.new.status === 'approved') {
-                            navigate("/");
+                            console.log("Status changed to approved, redirecting to dashboard");
+                            navigate("/", { replace: true });
                         } else if (payload.new.status === 'rejected') {
-                            navigate("/rejected");
+                            console.log("Status changed to rejected, redirecting to rejection page");
+                            navigate("/rejected", { replace: true });
                         } else if (payload.new.status === 'suspend') {
-                            navigate("/suspended");
+                            console.log("Status changed to suspend, redirecting to suspended page");
+                            navigate("/suspended", { replace: true });
                         }
                     }
                 )
@@ -258,6 +281,13 @@ const HoldUser = () => {
                 </div>
             </div>
         );
+    }
+
+    // If user is already active, redirect to dashboard
+    if (profile.status === 'active') {
+        console.log("User is already active, redirecting to dashboard");
+        navigate("/", { replace: true });
+        return null;
     }
 
     return (

@@ -38,6 +38,12 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
+    // Clear last redirect path if status changes from hold to active
+    if (profile && profile.status === 'active' && lastRedirectPath.current === "/hold") {
+      console.log("Status changed from hold to active, clearing redirect path");
+      lastRedirectPath.current = null;
+    }
+
     // If no user, redirect to login (except for public routes)
     if (!user) {
       if (location.pathname !== "/login" &&
@@ -113,6 +119,15 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
             navigate('/');
             return;
           }
+
+          // If user is on hold page but status is now active, redirect to dashboard
+          if (location.pathname === "/hold") {
+            console.log("User status is active but on hold page, redirecting to dashboard");
+            lastRedirectPath.current = "/";
+            navigate('/', { replace: true });
+            return;
+          }
+
           // User is on correct page, allow access
           console.log("Approved active user, allowing access");
           lastRedirectPath.current = null;

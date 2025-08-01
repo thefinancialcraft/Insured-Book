@@ -1,17 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { Mail, CheckCircle } from "lucide-react";
 
 const SignupPage: React.FC = () => {
   const [formData, setFormData] = useState({
-    userName: "",
     email: "",
-    contactNo: "",
-    address: "",
-    city: "",
-    state: "",
-    pincode: "",
-    dob: "",
     password: "",
     confirmPassword: ""
   });
@@ -21,7 +15,7 @@ const SignupPage: React.FC = () => {
   const navigate = useNavigate();
   const { signUp } = useAuth();
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -31,9 +25,9 @@ const SignupPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validation
-    if (!formData.userName || !formData.email || !formData.contactNo || !formData.address || !formData.city || !formData.state || !formData.pincode || !formData.dob || !formData.password || !formData.confirmPassword) {
+    if (!formData.email || !formData.password || !formData.confirmPassword) {
       setError("All fields are required.");
       return;
     }
@@ -55,32 +49,17 @@ const SignupPage: React.FC = () => {
       return;
     }
 
-    // Phone number validation
-    const phoneRegex = /^[0-9]{10}$/;
-    if (!phoneRegex.test(formData.contactNo)) {
-      setError("Please enter a valid 10-digit phone number.");
-      return;
-    }
-
-    // Pincode validation
-    const pincodeRegex = /^[0-9]{6}$/;
-    if (!pincodeRegex.test(formData.pincode)) {
-      setError("Please enter a valid 6-digit pincode.");
-      return;
-    }
-    
     setLoading(true);
     setError("");
-    
+
     const { error } = await signUp(formData.email, formData.password);
-    
+
     if (error) {
       setError(error.message || "Signup failed. Please try again.");
     } else {
       setSuccess(true);
-      setError("");
     }
-    
+
     setLoading(false);
   };
 
@@ -98,37 +77,54 @@ const SignupPage: React.FC = () => {
         </div>
 
         {success ? (
-          <div className="text-center space-y-4">
-            <div className="bg-green-50 text-green-600 px-3 py-2 rounded mb-2 text-center text-sm border border-green-100">
-              Account created successfully! Please check your email for confirmation.
+          <div className="text-center space-y-6">
+            <div className="flex flex-col items-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-50 mb-4">
+                <Mail className="w-8 h-8 text-green-500" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">Check Your Email</h3>
+              <p className="text-gray-600 text-sm mb-4">
+                We've sent a verification link to <strong>{formData.email}</strong>
+              </p>
+              <div className="bg-blue-50 text-blue-700 px-4 py-3 rounded-lg text-sm border border-blue-100">
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium mb-1">Next Steps:</p>
+                    <ol className="list-decimal list-inside space-y-1 text-xs">
+                      <li>Click the verification link in your email</li>
+                      <li>Complete your profile details</li>
+                      <li>Wait for approval (24-72 hours)</li>
+                      <li>Get your Employee ID and access dashboard</li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
             </div>
-            <button
-              onClick={() => navigate("/login")}
-              className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-md shadow-sm transition text-base"
-            >
-              Go to Login
-            </button>
+
+            <div className="space-y-3">
+              <button
+                onClick={() => navigate("/login")}
+                className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-md shadow-sm transition text-base"
+              >
+                Back to Login
+              </button>
+
+              <p className="text-gray-500 text-xs">
+                Didn't receive the email? Check your spam folder or{" "}
+                <button
+                  onClick={() => setSuccess(false)}
+                  className="text-indigo-600 hover:text-indigo-700 font-medium"
+                >
+                  try again
+                </button>
+              </p>
+            </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && <div className="bg-red-50 text-red-600 px-3 py-2 rounded mb-2 text-center text-sm border border-red-100">{error}</div>}
-            
-            <div>
-              <label htmlFor="userName" className="block text-xs font-medium text-gray-500 mb-1">User Name *</label>
-              <input
-                id="userName"
-                name="userName"
-                type="text"
-                value={formData.userName}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50 text-gray-700 text-sm transition"
-                required
-                autoFocus
-                disabled={loading}
-                placeholder="Enter your full name"
-              />
-            </div>
-            
+
             <div>
               <label htmlFor="email" className="block text-xs font-medium text-gray-500 mb-1">Email *</label>
               <input
@@ -139,104 +135,12 @@ const SignupPage: React.FC = () => {
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50 text-gray-700 text-sm transition"
                 required
+                autoFocus
                 disabled={loading}
                 placeholder="Enter your email address"
               />
             </div>
-            
-            <div>
-              <label htmlFor="contactNo" className="block text-xs font-medium text-gray-500 mb-1">Contact Number *</label>
-              <input
-                id="contactNo"
-                name="contactNo"
-                type="tel"
-                value={formData.contactNo}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50 text-gray-700 text-sm transition"
-                required
-                disabled={loading}
-                placeholder="Enter 10-digit phone number"
-                maxLength={10}
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="address" className="block text-xs font-medium text-gray-500 mb-1">Address *</label>
-              <textarea
-                id="address"
-                name="address"
-                value={formData.address}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50 text-gray-700 text-sm transition resize-none"
-                required
-                disabled={loading}
-                placeholder="Enter your street address, house number, locality"
-                rows={2}
-              />
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div>
-                <label htmlFor="city" className="block text-xs font-medium text-gray-500 mb-1">City *</label>
-                <input
-                  id="city"
-                  name="city"
-                  type="text"
-                  value={formData.city}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50 text-gray-700 text-sm transition"
-                  required
-                  disabled={loading}
-                  placeholder="City"
-                />
-              </div>
-              
-              <div>
-                <label htmlFor="state" className="block text-xs font-medium text-gray-500 mb-1">State *</label>
-                <input
-                  id="state"
-                  name="state"
-                  type="text"
-                  value={formData.state}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50 text-gray-700 text-sm transition"
-                  required
-                  disabled={loading}
-                  placeholder="State"
-                />
-              </div>
-              
-              <div>
-                <label htmlFor="pincode" className="block text-xs font-medium text-gray-500 mb-1">Pincode *</label>
-                <input
-                  id="pincode"
-                  name="pincode"
-                  type="text"
-                  value={formData.pincode}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50 text-gray-700 text-sm transition"
-                  required
-                  disabled={loading}
-                  placeholder="6-digit pincode"
-                  maxLength={6}
-                />
-              </div>
-            </div>
-            
-            <div>
-              <label htmlFor="dob" className="block text-xs font-medium text-gray-500 mb-1">Date of Birth *</label>
-              <input
-                id="dob"
-                name="dob"
-                type="date"
-                value={formData.dob}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50 text-gray-700 text-sm transition"
-                required
-                disabled={loading}
-              />
-            </div>
-            
             <div>
               <label htmlFor="password" className="block text-xs font-medium text-gray-500 mb-1">Password *</label>
               <input
@@ -251,7 +155,7 @@ const SignupPage: React.FC = () => {
                 placeholder="Enter password (min 6 characters)"
               />
             </div>
-            
+
             <div>
               <label htmlFor="confirmPassword" className="block text-xs font-medium text-gray-500 mb-1">Confirm Password *</label>
               <input
@@ -266,15 +170,15 @@ const SignupPage: React.FC = () => {
                 placeholder="Confirm your password"
               />
             </div>
-            
-            <button 
-              type="submit" 
+
+            <button
+              type="submit"
               className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-md shadow-sm transition text-base disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={loading}
             >
               {loading ? "Creating Account..." : "Create Account"}
             </button>
-            
+
             <div className="text-center">
               <p className="text-gray-500 text-sm">
                 Already have an account?{" "}

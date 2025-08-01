@@ -17,7 +17,9 @@ import UserDetails from "./pages/UserDetails";
 import AuthCallback from "./pages/AuthCallback";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
-import GoogleProfileCompletion from "./components/GoogleProfileCompletion";
+import ProfileCompletion from "./components/ProfileCompletion";
+import ApprovalPending from "./components/ApprovalPending";
+import AdminPanel from "./components/AdminPanel";
 
 const queryClient = new QueryClient();
 
@@ -32,7 +34,9 @@ const App = () => (
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/complete-profile" element={<GoogleProfileCompletion />} />
+            <Route path="/profile-completion" element={<ProfileCompletion />} />
+            <Route path="/approval-pending" element={<ApprovalPending />} />
+            <Route path="/admin" element={<AdminPanel />} />
             <Route path="/" element={<Layout />}>
               <Route index element={<Dashboard />} />
               <Route path="customers" element={<Customers />} />

@@ -1,174 +1,226 @@
-# Supabase Authentication Setup
+# Supabase Setup Guide
 
-## 1. Create a Supabase Project
+## 🚀 **Quick Setup**
 
-1. Go to [https://supabase.com](https://supabase.com)
-2. Sign up or log in
-3. Create a new project
-4. Wait for the project to be ready
+### **1. Create Supabase Project**
+1. Go to [supabase.com](https://supabase.com)
+2. Create new project
+3. Note down your **Project URL** and **anon public key**
 
-## 2. Get Your Project Credentials
-
-1. In your Supabase dashboard, go to **Settings** → **API**
-2. Copy your **Project URL** and **anon public** key
-
-## 3. Configure Environment Variables
-
-1. Create a `.env` file in your project root
-2. Add your Supabase credentials:
-
+### **2. Update Environment Variables**
+Create `.env.local` file in your project root:
 ```env
-VITE_SUPABASE_URL=https://bylyjilpmoxrvorabcnn.supabase.co
-VITE_SUPABASE_ANON_KEY=your_anon_key_here
+VITE_SUPABASE_URL=your_project_url
+VITE_SUPABASE_ANON_KEY=your_anon_key
 ```
 
-## 4. Enable Email Authentication
+### **3. Setup Database Tables**
+Run this SQL in your Supabase SQL Editor:
 
-1. In your Supabase dashboard, go to **Authentication** → **Providers**
-2. Make sure **Email** is enabled
-3. Configure any additional settings as needed
+```sql
+-- Create user_profiles table with approval system and roles
+CREATE TABLE IF NOT EXISTS user_profiles (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  user_name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  contact_no TEXT NOT NULL,
+  address TEXT NOT NULL,
+  city TEXT NOT NULL,
+  state TEXT NOT NULL,
+  pincode TEXT NOT NULL,
+  dob DATE NOT NULL,
+  role TEXT DEFAULT 'employee' CHECK (role IN ('admin', 'manager', 'employee', 'supervisor')),
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+  employee_id TEXT UNIQUE,
+  joining_date DATE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id)
+);
 
-## 5. Setup Google OAuth
+-- Enable Row Level Security (RLS)
+ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
 
-### Step 1: Create Google OAuth Credentials
+-- Create policy to allow users to read their own profile
+CREATE POLICY "Users can view own profile" ON user_profiles
+  FOR SELECT USING (auth.uid() = user_id);
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select existing one
-3. Enable the **Google+ API** or **Google Identity API**
-4. Go to **Credentials** → **Create Credentials** → **OAuth 2.0 Client IDs**
-5. Choose **Web application**
-6. Add authorized redirect URIs:
-   - `https://bylyjilpmoxrvorabcnn.supabase.co/auth/v1/callback`
-   - `http://localhost:8082/auth/callback` (for development)
-7. Copy the **Client ID** and **Client Secret**
+-- Create policy to allow users to insert their own profile
+CREATE POLICY "Users can insert own profile" ON user_profiles
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
 
-### Step 2: Configure Google in Supabase
+-- Create policy to allow users to update their own profile
+CREATE POLICY "Users can update own profile" ON user_profiles
+  FOR UPDATE USING (auth.uid() = user_id);
 
-1. In your Supabase dashboard, go to **Authentication** → **Providers**
-2. Find **Google** and click **Enable**
-3. Enter your Google OAuth credentials:
-   - **Client ID**: Your Google OAuth Client ID
-   - **Client Secret**: Your Google OAuth Client Secret
-4. Save the configuration
+-- Create policy to allow users to delete their own profile
+CREATE POLICY "Users can delete own profile" ON user_profiles
+  FOR DELETE USING (auth.uid() = user_id);
 
-### Step 3: Update Site URL
+-- Create function to automatically update updated_at timestamp
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ language 'plpgsql';
 
-1. In your Supabase dashboard, go to **Authentication** → **URL Configuration**
-2. Set your **Site URL** to: `http://localhost:8082` (for development)
-3. Add redirect URLs:
-   - `http://localhost:8082/auth/callback`
-   - `http://localhost:8082/`
+-- Create trigger to automatically update updated_at
+CREATE TRIGGER update_user_profiles_updated_at 
+  BEFORE UPDATE ON user_profiles 
+  FOR EACH ROW 
+  EXECUTE FUNCTION update_updated_at_column();
 
-### Step 4: Configure Production URLs
+-- Create function to generate employee ID
+CREATE OR REPLACE FUNCTION generate_employee_id()
+RETURNS TEXT AS $$
+DECLARE
+  new_employee_id TEXT;
+BEGIN
+  -- Generate employee ID with format: EMP + year + 4 digit sequence
+  SELECT 'EMP' || EXTRACT(YEAR FROM CURRENT_DATE) || LPAD(COALESCE(MAX(CAST(SUBSTRING(employee_id FROM 8) AS INTEGER)), 0) + 1::TEXT, 4, '0')
+  INTO new_employee_id
+  FROM user_profiles 
+  WHERE employee_id IS NOT NULL 
+    AND employee_id LIKE 'EMP' || EXTRACT(YEAR FROM CURRENT_DATE) || '%';
+  
+  RETURN new_employee_id;
+END;
+$$ LANGUAGE plpgsql;
+```
 
-1. In your Supabase dashboard, go to **Authentication** → **URL Configuration**
-2. Add these additional redirect URLs for production:
-   - `https://insured-book.vercel.app/auth/callback`
-   - `https://insured-book.vercel.app/`
-   - `https://insured-book.vercel.app/reset-password`
-   - `https://insured-book.vercel.app/complete-profile`
-3. Save the configuration
+### **4. Configure Authentication**
 
-## 6. Setup Password Reset
+#### **Email Authentication**
+1. Go to **Authentication** → **Settings**
+2. Enable **Email confirmations**
+3. Set **Site URL** to `http://localhost:8080`
 
-### Step 1: Configure Email Templates
+#### **Google OAuth**
+1. Go to **Authentication** → **Providers**
+2. Enable **Google**
+3. Add your Google OAuth credentials
+4. Set **Redirect URL** to `http://localhost:8080/auth/callback`
 
-1. In your Supabase dashboard, go to **Authentication** → **Email Templates**
-2. Click on **"Confirm signup"** template
-3. Customize the email template if needed
-4. Click on **"Reset password"** template
-5. Customize the password reset email template
-6. Save your changes
+#### **Password Reset**
+1. Go to **Authentication** → **Settings**
+2. Set **Redirect URL** to `http://localhost:8080/approval-pending`
 
-### Step 2: Configure URL Configuration for Password Reset
+### **5. Setup Admin User**
+Follow the detailed guide in `ADMIN_SETUP_GUIDE.md` to create your first admin user.
 
-1. In your Supabase dashboard, go to **Authentication** → **URL Configuration**
-2. Make sure your **Site URL** is set to: `http://localhost:8082` (for development)
-3. Add these redirect URLs:
-   - `http://localhost:8082/auth/callback`
-   - `http://localhost:8082/`
-   - `http://localhost:8082/reset-password` (for password reset)
-4. Save the configuration
+## 🔧 **Features**
 
-### Step 3: Test Password Reset Flow
+### **Authentication Flow**
+- ✅ **Email/password** authentication with verification
+- ✅ **Google OAuth** integration
+- ✅ **Two-step signup** (email → profile completion)
+- ✅ **Approval system** (24-72 hours)
+- ✅ **Employee ID generation** after approval
+- ✅ **Real-time status updates**
+- ✅ **Role-based access control**
 
-1. Go to your login page: `http://localhost:8082/login`
-2. Click on "Forgot password?"
-3. Enter your email address
-4. Check your email for the reset link
-5. Click the link to reset your password
+### **Role Management**
+- ✅ **Admin-only role assignment** (users cannot select their own role)
+- ✅ **Role hierarchy**: Admin → Manager → Supervisor → Employee
+- ✅ **Visual role indicators** with color coding
+- ✅ **Role-based permissions**
 
-## 7. Test the Setup
+### **User Management**
+- ✅ **Admin panel** for user management
+- ✅ **User approval/rejection** system
+- ✅ **Profile completion** workflow
+- ✅ **Employee ID generation**
+- ✅ **Real-time updates**
 
-1. Start your development server: `npm run dev`
-2. Visit `http://localhost:8082/login`
-3. Try both email/password and Google sign-in
-4. Test the password reset functionality
+## 🧪 **Test the Setup**
 
-## Features
+### **Email Authentication Flow**
+1. **Sign up** with email/password
+2. **Verify email** by clicking link
+3. **Complete profile** with personal details
+4. **Wait for approval** (admin must approve)
+5. **Get Employee ID** after approval
+6. **Access dashboard**
 
-- ✅ Real-time authentication state
-- ✅ Email/password authentication
-- ✅ Google OAuth authentication
-- ✅ Password reset functionality
-- ✅ Automatic session management
-- ✅ Protected routes
-- ✅ Loading states
-- ✅ Error handling
-- ✅ OAuth callback handling
+### **Google OAuth Flow**
+1. **Sign in** with Google
+2. **Complete profile** with personal details
+3. **Wait for approval** (admin must approve)
+4. **Get Employee ID** after approval
+5. **Access dashboard**
 
-## Demo Account
+### **Admin Setup**
+1. **Create admin user** (follow `ADMIN_SETUP_GUIDE.md`)
+2. **Access admin panel** at `/admin`
+3. **Assign roles** to users
+4. **Approve/reject** user applications
 
-For testing purposes, you can use:
+## 🚨 **Troubleshooting**
 
-- Email: `demo@example.com`
-- Password: `demo123`
+### **Common Issues**
 
-Or use Google OAuth for quick sign-in.
+#### **1. Foreign Key Constraint Error**
+```sql
+-- Check if user exists in auth.users
+SELECT * FROM auth.users WHERE id = 'your-user-id';
 
-## Troubleshooting
+-- Verify user_profiles table structure
+SELECT column_name, data_type FROM information_schema.columns 
+WHERE table_name = 'user_profiles';
+```
 
-### Google OAuth Issues:
+#### **2. Role Assignment Issues**
+- Ensure admin user has `role = 'admin'` in database
+- Check RLS policies are correctly set
+- Verify admin user is logged in
 
-#### Error 400: redirect_uri_mismatch
+#### **3. Approval System Issues**
+- Check `status` field in `user_profiles` table
+- Verify real-time subscriptions are working
+- Ensure admin has approved the user
 
-**Solution:**
+### **Database Verification**
+```sql
+-- Check table structure
+SELECT column_name, data_type, is_nullable 
+FROM information_schema.columns 
+WHERE table_name = 'user_profiles';
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Navigate to **APIs & Services** → **Credentials**
-3. Find your OAuth 2.0 Client ID and click **Edit**
-4. Under **Authorized redirect URIs**, add:
-   - `https://bylyjilpmoxrvorabcnn.supabase.co/auth/v1/callback`
-   - `http://localhost:8082/auth/callback`
-5. Click **Save**
-6. Wait 5-10 minutes for changes to propagate
+-- Check RLS policies
+SELECT schemaname, tablename, policyname, permissive, roles, cmd, qual 
+FROM pg_policies 
+WHERE tablename = 'user_profiles';
 
-#### Common Issues:
+-- Check user profiles
+SELECT user_name, email, role, status, employee_id 
+FROM user_profiles 
+ORDER BY created_at DESC;
+```
 
-- Make sure redirect URIs are exactly correct (no extra spaces)
-- Check that Google OAuth is enabled in Supabase
-- Verify Client ID and Secret are correct
-- Ensure Site URL is set correctly in Supabase
-- Clear browser cache and cookies
-- Try in incognito/private mode
+## 📚 **Additional Resources**
 
-#### Verification Steps:
+- **Admin Setup**: See `ADMIN_SETUP_GUIDE.md`
+- **Database Schema**: See `database_setup.sql`
+- **Role Management**: Only admins can assign roles
+- **User Flow**: Email verification → Profile completion → Approval → Dashboard
 
-1. **Google Cloud Console**: Verify redirect URIs match exactly
-2. **Supabase Dashboard**: Check Google provider is enabled
-3. **Environment**: Ensure you're using port 8082
-4. **Browser**: Clear cache and try again
+## ✅ **Verification Checklist**
 
-### Password Reset Issues:
+- [ ] Supabase project created
+- [ ] Environment variables set
+- [ ] Database tables created
+- [ ] RLS policies configured
+- [ ] Authentication providers configured
+- [ ] Admin user created
+- [ ] Email verification working
+- [ ] Profile completion working
+- [ ] Approval system working
+- [ ] Admin panel accessible
+- [ ] Role assignment working
 
-- Check that email templates are configured
-- Verify redirect URLs include `/reset-password`
-- Ensure email provider is enabled
-- Check spam folder for reset emails
+---
 
-### Development vs Production:
-
-- For production, update redirect URIs to your domain
-- Update Site URL in Supabase dashboard
-- Use HTTPS in production
-- Update email templates for production branding
+**Need Help?** Check the troubleshooting section or refer to the admin setup guide.

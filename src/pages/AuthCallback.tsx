@@ -1,107 +1,120 @@
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
+import React, { useEffect, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/lib/supabase";
+import { Loader2 } from "lucide-react";
 
 const AuthCallback = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        console.log('AuthCallback: Starting OAuth callback handling');
-        console.log('Current URL:', window.location.href);
-        console.log('URL hash:', window.location.hash);
-        
-        // Handle the OAuth callback
-        const { data, error } = await supabase.auth.getSession();
-        
-        console.log('Supabase session data:', data);
-        console.log('Supabase session error:', error);
-        
-        if (error) {
-          console.error('Auth callback error:', error);
-          navigate('/login?error=auth_failed');
+        // Wait a moment for auth state to settle
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        if (!user) {
+          setError("Authentication failed");
+          setLoading(false);
           return;
         }
 
-        if (data.session) {
-          const user = data.session.user;
-          console.log('User authenticated:', user);
-          
-          // Check if this is a Google OAuth user and if they need to complete their profile
-          if (user.app_metadata?.provider === 'google') {
-            // Check if user has complete profile data
-            const hasCompleteProfile = user.user_metadata?.first_name && 
-                                     user.user_metadata?.last_name &&
-                                     user.user_metadata?.phone_number && 
-                                     user.user_metadata?.address && 
-                                     user.user_metadata?.city && 
-                                     user.user_metadata?.state && 
-                                     user.user_metadata?.pincode && 
-                                     user.user_metadata?.dob;
-            
-            console.log('Profile completion check:', {
-              hasCompleteProfile,
-              userMetadata: user.user_metadata
-            });
-            
-            if (!hasCompleteProfile) {
-              // Redirect to profile completion page
-              console.log('Redirecting to profile completion');
-              navigate('/complete-profile');
-              return;
-            }
-          }
-          
-          // Successful authentication with complete profile
-          console.log('Redirecting to dashboard');
-          navigate('/');
-        } else {
-          // No session found, try to get session from URL hash
-          console.log('No session found, checking URL hash');
-          
-          // Check if there's an access token in the URL hash
-          const hash = window.location.hash;
-          if (hash && hash.includes('access_token')) {
-            console.log('Access token found in URL hash');
-            // Wait a moment for Supabase to process the token
-            setTimeout(async () => {
-              const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-              console.log('Session data after timeout:', sessionData);
-              console.log('Session error after timeout:', sessionError);
-              
-              if (sessionData.session) {
-                console.log('Session established from token');
-                navigate('/');
-              } else {
-                console.error('Failed to establish session:', sessionError);
-                navigate('/login?error=session_failed');
-              }
-            }, 2000); // Increased timeout to 2 seconds
-          } else {
-            console.log('No access token found, redirecting to login');
-            navigate('/login');
-          }
+        // Check if user has a complete profile
+        const { data: profile, error: profileError } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        if (profileError && profileError.code !== 'PGRST116') {
+          console.error('Error fetching profile:', profileError);
+          setError("Failed to fetch user profile");
+          setLoading(false);
+          return;
         }
+
+        // If user has no profile, redirect to profile completion
+        if (!profile) {
+          console.log('No profile found, redirecting to profile completion');
+          navigate('/profile-completion');
+          return;
+        }
+
+        // If user is admin and approved, redirect to admin panel
+        if (profile.role === 'admin' && profile.status === 'approved') {
+          console.log('Admin user detected, redirecting to admin panel');
+          navigate('/admin');
+          return;
+        }
+
+        // If user has complete profile but needs approval
+        if (profile.status === 'pending') {
+          console.log('Profile complete but pending approval');
+          navigate('/approval-pending');
+          return;
+        }
+
+        // If user is approved, redirect to dashboard
+        if (profile.status === 'approved') {
+          console.log('User approved, redirecting to dashboard');
+          navigate('/');
+          return;
+        }
+
+        // If user is rejected
+        if (profile.status === 'rejected') {
+          console.log('User rejected');
+          navigate('/approval-pending');
+          return;
+        }
+
+        // Default fallback
+        navigate('/profile-completion');
       } catch (error) {
-        console.error('Unexpected error in auth callback:', error);
-        navigate('/login?error=unexpected');
+        console.error('Auth callback error:', error);
+        setError("An error occurred during authentication");
+      } finally {
+        setLoading(false);
       }
     };
 
     handleAuthCallback();
-  }, [navigate]);
+  }, [user, navigate]);
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-        <h2 className="text-xl font-semibold text-gray-800 mb-2">Signing you in...</h2>
-        <p className="text-gray-500">Please wait while we complete your authentication.</p>
-        <p className="text-xs text-gray-400 mt-2">Processing OAuth callback...</p>
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-indigo-600" />
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Processing Authentication</h2>
+          <p className="text-gray-600">Please wait while we set up your account...</p>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg mb-4">
+            {error}
+          </div>
+          <button
+            onClick={() => navigate('/login')}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md"
+          >
+            Back to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 };
 
 export default AuthCallback; 

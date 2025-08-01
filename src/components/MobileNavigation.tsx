@@ -1,8 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { 
-  TrendingUp, 
-  Users, 
+import {
+  TrendingUp,
+  Users,
   FileText,
   Phone
 } from "lucide-react";
@@ -32,7 +32,7 @@ const MobileNavigation = () => {
                 <span className="text-xs mt-0.5">Dashboard</span>
               </Link>
             </Button>
-            
+
             <Button
               variant="ghost"
               size="sm"
@@ -44,7 +44,7 @@ const MobileNavigation = () => {
                 <span className="text-xs mt-0.5">Customers</span>
               </Link>
             </Button>
-            
+
             <Button
               variant="ghost"
               size="sm"
@@ -56,7 +56,7 @@ const MobileNavigation = () => {
                 <span className="text-xs mt-0.5">CRM</span>
               </Link>
             </Button>
-            
+
             <Button
               variant="ghost"
               size="sm"
@@ -71,7 +71,7 @@ const MobileNavigation = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Mobile Bottom Padding */}
       <div className="md:hidden h-16"></div>
     </>

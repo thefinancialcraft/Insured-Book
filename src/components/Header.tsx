@@ -1,8 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { 
-  TrendingUp, 
-  Users, 
+import {
+  TrendingUp,
+  Users,
   FileText,
   Phone,
   Car,
@@ -28,7 +28,7 @@ const Header = ({ onLogout }: HeaderProps) => {
 
   // Get user data from Google authentication or use defaults
   const userData = {
-    userName: user?.user_metadata?.first_name && user?.user_metadata?.last_name 
+    userName: user?.user_metadata?.first_name && user?.user_metadata?.last_name
       ? `${user.user_metadata.first_name} ${user.user_metadata.last_name}`.trim()
       : user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email || "User",
     lastLogin: user?.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString() : "Not available",
@@ -45,7 +45,7 @@ const Header = ({ onLogout }: HeaderProps) => {
             </div>
             <h1 className="text-xl font-bold text-foreground">MotorKavach</h1>
           </div>
-          
+
           <div className="hidden md:flex items-center space-x-1">
             <Button
               variant={isActive("/") ? "default" : "ghost"}
@@ -102,9 +102,9 @@ const Header = ({ onLogout }: HeaderProps) => {
               <Button variant="outline" size="sm" asChild className="p-0 h-8 w-8 rounded-full overflow-hidden">
                 <Link to="/profile">
                   {userData.profilePicture ? (
-                    <img 
-                      src={userData.profilePicture} 
-                      alt="Profile" 
+                    <img
+                      src={userData.profilePicture}
+                      alt="Profile"
                       className="h-8 w-8 object-cover"
                       onError={(e) => {
                         // Fallback to icon if image fails to load
@@ -118,7 +118,7 @@ const Header = ({ onLogout }: HeaderProps) => {
                 </Link>
               </Button>
             </div>
-            
+
             <Button className="bg-red-500 hover:bg-red-600 text-white" size="sm" onClick={onLogout}>
               <Download className="h-4 w-4 rotate-90 " />
             </Button>

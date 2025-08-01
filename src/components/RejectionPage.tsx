@@ -3,8 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import {
-    Clock,
-    CheckCircle,
+    XCircle,
     AlertCircle,
     User,
     Mail,
@@ -12,7 +11,7 @@ import {
     MapPin,
     Calendar,
     Briefcase,
-    XCircle
+    MessageSquare
 } from "lucide-react";
 
 interface UserProfile {
@@ -33,6 +32,9 @@ interface UserProfile {
     // Status Management System (Separate from approval)
     status: 'active' | 'hold' | 'suspend';
 
+    // Status Reason for rejection, hold, or suspend
+    status_reason?: string;
+
     employee_id?: string;
     joining_date?: string;
     hold_days?: number;
@@ -40,7 +42,7 @@ interface UserProfile {
     created_at: string;
 }
 
-const ApprovalPending = () => {
+const RejectionPage = () => {
     const { user, signOut, loading: authLoading } = useAuth();
     const navigate = useNavigate();
     const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -62,13 +64,17 @@ const ApprovalPending = () => {
             } else if (data) {
                 setProfile(data);
 
-                // If approved or active, redirect to dashboard
-                if (data.approval_status === 'approved' && data.status === 'active') {
-                    navigate("/");
-                } else if (data.approval_status === 'approved' && data.status === 'hold') {
-                    navigate("/hold");
-                } else if (data.approval_status === 'approved' && data.status === 'suspend') {
-                    navigate("/suspended");
+                // If not rejected, redirect to appropriate page
+                if (data.approval_status !== 'rejected') {
+                    if (data.approval_status === 'approved' && data.status === 'active') {
+                        navigate("/");
+                    } else if (data.approval_status === 'approved' && data.status === 'hold') {
+                        navigate("/hold");
+                    } else if (data.approval_status === 'approved' && data.status === 'suspend') {
+                        navigate("/suspended");
+                    } else if (data.approval_status === 'pending') {
+                        navigate("/approval-pending");
+                    }
                 }
             }
         } catch (error) {
@@ -79,7 +85,7 @@ const ApprovalPending = () => {
     };
 
     useEffect(() => {
-        console.log("=== APPROVAL PENDING DEBUG ===");
+        console.log("=== REJECTION PAGE DEBUG ===");
         console.log("User:", user?.id);
         console.log("Auth loading:", authLoading);
         console.log("Profile:", profile);
@@ -115,13 +121,15 @@ const ApprovalPending = () => {
                         console.log('Profile updated:', payload.new);
                         setProfile(payload.new as UserProfile);
 
-                        // If approved or active, redirect to dashboard
+                        // If status changed, redirect appropriately
                         if (payload.new.approval_status === 'approved' && payload.new.status === 'active') {
                             navigate("/");
                         } else if (payload.new.approval_status === 'approved' && payload.new.status === 'hold') {
                             navigate("/hold");
                         } else if (payload.new.approval_status === 'approved' && payload.new.status === 'suspend') {
                             navigate("/suspended");
+                        } else if (payload.new.approval_status === 'pending') {
+                            navigate("/approval-pending");
                         }
                     }
                 )
@@ -140,50 +148,6 @@ const ApprovalPending = () => {
         } catch (error) {
             console.error("Error signing out:", error);
             navigate("/login");
-        }
-    };
-
-    const getApprovalIcon = () => {
-        switch (profile?.approval_status) {
-            case 'approved':
-                return <CheckCircle className="w-8 h-8 text-green-500" />;
-            case 'rejected':
-                return <AlertCircle className="w-8 h-8 text-red-500" />;
-            default:
-                return <Clock className="w-8 h-8 text-yellow-500" />;
-        }
-    };
-
-    const getApprovalText = () => {
-        switch (profile?.approval_status) {
-            case 'approved':
-                return "Application Approved!";
-            case 'rejected':
-                return "Application Rejected";
-            default:
-                return "Pending Approval";
-        }
-    };
-
-    const getApprovalDescription = () => {
-        switch (profile?.approval_status) {
-            case 'approved':
-                return "Your application has been approved. You can now access the dashboard.";
-            case 'rejected':
-                return "Your application has been rejected. Please contact support for more information.";
-            default:
-                return "Your application is under review. This usually takes 24-72 hours.";
-        }
-    };
-
-    const getApprovalColor = () => {
-        switch (profile?.approval_status) {
-            case 'approved':
-                return "bg-green-50 text-green-700 border-green-100";
-            case 'rejected':
-                return "bg-red-50 text-red-700 border-red-100";
-            default:
-                return "bg-yellow-50 text-yellow-700 border-yellow-100";
         }
     };
 
@@ -221,7 +185,7 @@ const ApprovalPending = () => {
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading your approval status...</p>
+                    <p className="text-gray-600">Loading your application status...</p>
                 </div>
             </div>
         );
@@ -234,7 +198,7 @@ const ApprovalPending = () => {
                 <div className="text-center">
                     <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
                     <h2 className="text-xl font-semibold text-gray-800 mb-2">Session Expired</h2>
-                    <p className="text-gray-600 mb-4">Please log in again to view your approval status.</p>
+                    <p className="text-gray-600 mb-4">Please log in again to view your application status.</p>
                     <button
                         onClick={() => navigate("/login")}
                         className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-md transition"
@@ -264,15 +228,34 @@ const ApprovalPending = () => {
         );
     }
 
+    // If user is not rejected, redirect to appropriate page
+    if (profile.approval_status !== 'rejected') {
+        if (profile.approval_status === 'approved' && profile.status === 'active') {
+            navigate("/");
+            return null;
+        } else if (profile.approval_status === 'approved' && profile.status === 'hold') {
+            navigate("/hold");
+            return null;
+        } else if (profile.approval_status === 'approved' && profile.status === 'suspend') {
+            navigate("/suspended");
+            return null;
+        } else {
+            navigate("/approval-pending");
+            return null;
+        }
+    }
+
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 py-8">
             <div className="w-full max-w-2xl p-8 bg-white rounded-xl shadow-lg border border-gray-100">
                 <div className="flex flex-col items-center mb-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-50 mb-4">
-                        {getApprovalIcon()}
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-50 mb-4">
+                        <XCircle className="w-8 h-8 text-red-500" />
                     </div>
-                    <h2 className="text-2xl font-semibold text-gray-800 mb-2">{getApprovalText()}</h2>
-                    <p className="text-gray-600 text-center max-w-md">{getApprovalDescription()}</p>
+                    <h2 className="text-2xl font-semibold text-gray-800 mb-2">Application Rejected</h2>
+                    <p className="text-gray-600 text-center max-w-md">
+                        We're sorry, but your application has been rejected. Please review the details below.
+                    </p>
                 </div>
 
                 {error && (
@@ -281,44 +264,24 @@ const ApprovalPending = () => {
                     </div>
                 )}
 
-                <div className={`p-4 rounded-lg border ${getApprovalColor()} mb-6`}>
+                <div className="bg-red-50 text-red-700 border border-red-100 p-4 rounded-lg mb-6">
                     <div className="flex items-center gap-2 mb-3">
-                        {getApprovalIcon()}
-                        <span className="font-medium">{getApprovalText()}</span>
+                        <XCircle className="w-5 h-5" />
+                        <span className="font-medium">Application Rejected</span>
                     </div>
 
-                    {profile.status === 'hold' && profile.hold_days && (
+                    {profile.status_reason ? (
                         <div className="space-y-2 text-sm">
-                            <p>• Your account is temporarily on hold</p>
-                            <p>• Hold duration: {profile.hold_days} day(s)</p>
-                            {profile.hold_start_date && (
-                                <p>• Hold started: {new Date(profile.hold_start_date).toLocaleDateString()}</p>
-                            )}
-                            <p>• Your account will be automatically activated after the hold period</p>
+                            <p><strong>Reason for rejection:</strong></p>
+                            <div className="bg-white p-3 rounded border border-red-200">
+                                <p className="text-red-800">{profile.status_reason}</p>
+                            </div>
                         </div>
-                    )}
-
-                    {profile.status === 'suspend' && (
+                    ) : (
                         <div className="space-y-2 text-sm">
-                            <p>• Your account has been suspended indefinitely</p>
-                            <p>• Please contact support for assistance</p>
-                            <p>• You cannot access the system until suspension is lifted</p>
-                        </div>
-                    )}
-
-                    {profile.status === 'active' && (
-                        <div className="space-y-2 text-sm">
-                            <p>• Your account is active and fully functional</p>
-                            <p>• You can access all dashboard features</p>
-                            <p>• Welcome to the system!</p>
-                        </div>
-                    )}
-
-                    {profile.status === 'approved' && profile.employee_id && (
-                        <div className="space-y-2 text-sm">
-                            <p><strong>Employee ID:</strong> {profile.employee_id}</p>
-                            <p><strong>Joining Date:</strong> {new Date(profile.joining_date!).toLocaleDateString()}</p>
-                            <p>• You can now access all dashboard features</p>
+                            <p>• Your application has been rejected by our team</p>
+                            <p>• Please contact support for more information</p>
+                            <p>• You may reapply after addressing the concerns</p>
                         </div>
                     )}
                 </div>
@@ -379,49 +342,21 @@ const ApprovalPending = () => {
                     </div>
                 </div>
 
-                {profile.approval_status === 'pending' && (
-                    <div className="text-center space-y-4">
-                        <button
-                            onClick={handleBackToLogin}
-                            className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-md transition"
-                        >
-                            Back to Login
-                        </button>
+                <div className="text-center space-y-4">
+                    <button
+                        onClick={handleBackToLogin}
+                        className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-md transition"
+                    >
+                        Back to Login
+                    </button>
 
-                        <p className="text-gray-500 text-sm">
-                            You can check this page again later to see your approval status.
-                        </p>
-                    </div>
-                )}
-
-                {profile.approval_status === 'approved' && (
-                    <div className="text-center">
-                        <button
-                            onClick={() => navigate("/")}
-                            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md transition"
-                        >
-                            Go to Dashboard
-                        </button>
-                    </div>
-                )}
-
-                {profile.approval_status === 'rejected' && (
-                    <div className="text-center space-y-4">
-                        <button
-                            onClick={handleBackToLogin}
-                            className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-md transition"
-                        >
-                            Back to Login
-                        </button>
-
-                        <p className="text-gray-500 text-sm">
-                            Your application has been rejected. Please contact support for more information.
-                        </p>
-                    </div>
-                )}
+                    <p className="text-gray-500 text-sm">
+                        If you believe this rejection was made in error, please contact our support team.
+                    </p>
+                </div>
             </div>
         </div>
     );
 };
 
-export default ApprovalPending; 
+export default RejectionPage; 

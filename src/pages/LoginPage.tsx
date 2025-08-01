@@ -186,50 +186,43 @@ const LoginPage = () => {
           }
 
           // If user is admin and approved, redirect to admin panel
-          if (profile.role === 'admin' && profile.status === 'approved') {
+          if (profile.role === 'admin' && profile.approval_status === 'approved') {
             console.log("Admin user detected, redirecting to admin panel");
             navigate('/admin');
             return;
           }
 
-          // If user is active, redirect to dashboard
-          if (profile.status === 'active') {
-            console.log("User active, redirecting to dashboard");
+          // If user is approved and active, redirect to dashboard
+          if (profile.approval_status === 'approved' && profile.status === 'active') {
+            console.log("User approved and active, redirecting to dashboard");
             navigate('/');
             return;
           }
 
-          // If user is approved, redirect to dashboard
-          if (profile.status === 'approved') {
-            console.log("User approved, redirecting to dashboard");
-            navigate('/');
+          // If user is approved but on hold, redirect to hold page
+          if (profile.approval_status === 'approved' && profile.status === 'hold') {
+            console.log("User approved but on hold, redirecting to hold page");
+            navigate('/hold');
             return;
           }
 
-          // If user is on hold, redirect to approval pending
-          if (profile.status === 'hold') {
-            console.log("User on hold, redirecting to approval pending");
-            navigate('/approval-pending');
+          // If user is approved but suspended, redirect to suspended page
+          if (profile.approval_status === 'approved' && profile.status === 'suspend') {
+            console.log("User approved but suspended, redirecting to suspended page");
+            navigate('/suspended');
             return;
           }
 
-          // If user is suspended, redirect to approval pending
-          if (profile.status === 'suspend') {
-            console.log("User suspended, redirecting to approval pending");
-            navigate('/approval-pending');
+          // If user is rejected
+          if (profile.approval_status === 'rejected') {
+            console.log("User rejected, redirecting to rejection page");
+            navigate('/rejected');
             return;
           }
 
-          // If user is rejected, redirect to approval pending
-          if (profile.status === 'rejected') {
-            console.log("User rejected, redirecting to approval pending");
-            navigate('/approval-pending');
-            return;
-          }
-
-          // If user has complete profile but needs approval
-          if (profile.status === 'pending') {
-            console.log("Profile complete but pending approval");
+          // If user needs approval
+          if (profile.approval_status === 'pending') {
+            console.log("User needs approval, redirecting to approval pending");
             navigate('/approval-pending');
             return;
           }

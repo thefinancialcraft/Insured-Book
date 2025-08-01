@@ -176,24 +176,21 @@ const ProfileCompletion = () => {
 
             console.log("Auth user verified:", authUser.user.id);
 
-            const { error } = await supabase
+            const { data, error } = await supabase
                 .from('user_profiles')
-                .insert([
-                    {
-                        user_id: user.id,
-                        user_name: userData.userName,
-                        email: userData.email,
-                        contact_no: userData.contactNo,
-                        address: userData.address,
-                        city: userData.city,
-                        state: userData.state,
-                        pincode: userData.pincode,
-                        dob: userData.dob,
-                        role: 'employee', // Default role - admin will change this
-                        status: 'pending',
-                        created_at: new Date().toISOString()
-                    }
-                ]);
+                .insert({
+                    user_id: user.id,
+                    user_name: userData.userName,
+                    email: userData.email,
+                    contact_no: userData.contactNo,
+                    address: userData.address,
+                    city: userData.city,
+                    state: userData.state,
+                    pincode: userData.pincode,
+                    dob: userData.dob,
+                    approval_status: 'pending',
+                    status: 'active' // Default to active when approved
+                });
 
             if (error) {
                 console.error("Database error:", error);

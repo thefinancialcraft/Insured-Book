@@ -18,11 +18,21 @@ const CallPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
-  
+
   const customerId = searchParams.get("customerId");
   const customerName = searchParams.get("customerName") || "Unknown Customer";
   const customerPhone = searchParams.get("customerPhone") || "+91 00000 00000";
-  
+
+  // Debug logging
+  useEffect(() => {
+    console.log("=== CALL PAGE DEBUG ===");
+    console.log("CallPage component rendered");
+    console.log("Customer ID:", customerId);
+    console.log("Customer Name:", customerName);
+    console.log("Customer Phone:", customerPhone);
+    console.log("All search params:", Object.fromEntries(searchParams.entries()));
+  }, [customerId, customerName, customerPhone, searchParams]);
+
   const [callDuration, setCallDuration] = useState(0);
   const [isCallActive, setIsCallActive] = useState(true);
   const [showDisposition, setShowDisposition] = useState(false);
@@ -83,7 +93,9 @@ const CallPage = () => {
   // Auto-trigger phone call when page loads
   useEffect(() => {
     if (customerPhone && customerPhone !== "+91 00000 00000") {
-      window.location.href = `tel:${customerPhone}`;
+      console.log("Attempting to call:", customerPhone);
+      // Comment out the actual call for testing
+      // window.location.href = `tel:${customerPhone}`;
     }
   }, [customerPhone]);
 
@@ -133,6 +145,15 @@ const CallPage = () => {
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
+      {/* Debug info */}
+      <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <h3 className="font-medium text-blue-900 mb-2">Debug Information</h3>
+        <p className="text-sm text-blue-700">CallPage is loading!</p>
+        <p className="text-sm text-blue-700">Customer ID: {customerId}</p>
+        <p className="text-sm text-blue-700">Customer Name: {customerName}</p>
+        <p className="text-sm text-blue-700">Customer Phone: {customerPhone}</p>
+      </div>
+
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Call Header */}
         <Card className="p-6">
@@ -142,11 +163,11 @@ const CallPage = () => {
                 <User className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Calling  {customerName}</h1>
+                <h1 className="text-2xl font-bold text-foreground">Calling {customerName}</h1>
                 <p className="text-muted-foreground">{customerPhone}</p>
               </div>
             </div>
-           
+
           </div>
 
           {/* Call Controls */}
@@ -155,7 +176,7 @@ const CallPage = () => {
               <Clock className="w-5 h-5" />
               <span>{formatDuration(callDuration)}</span>
             </div>
-            
+
             {isCallActive && (
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
@@ -182,7 +203,7 @@ const CallPage = () => {
         {/* Call History Timeline */}
         <Card className="p-6">
           <h3 className="text-lg font-semibold mb-4">Call History & Timeline</h3>
-          
+
           {callHistory.length === 0 ? (
             <p className="text-muted-foreground">No call history available</p>
           ) : (
@@ -197,7 +218,7 @@ const CallPage = () => {
                       <div className="w-px h-16 bg-border mt-2" />
                     )}
                   </div>
-                  
+
                   <div className="flex-1 space-y-2">
                     <div className="flex items-center space-x-2">
                       <Badge variant="outline">{call.callType}</Badge>
@@ -210,9 +231,9 @@ const CallPage = () => {
                         </span>
                       )}
                     </div>
-                    
+
                     <p className="text-sm text-foreground">{call.notes}</p>
-                    
+
                     {call.nextCallDate && (
                       <p className="text-sm text-blue-600 font-medium">
                         Next call: {new Date(call.nextCallDate).toLocaleDateString('en-US', {
@@ -224,7 +245,7 @@ const CallPage = () => {
                         })}
                       </p>
                     )}
-                    
+
                     <p className="text-xs text-muted-foreground">
                       {new Date(call.timestamp).toLocaleDateString('en-US', {
                         weekday: 'long',
@@ -266,12 +287,12 @@ const CallPage = () => {
       </div>
 
       {/* Disposition Dialog */}
-      <Dialog open={showDisposition} onOpenChange={() => {}}>
+      <Dialog open={showDisposition} onOpenChange={() => { }}>
         <DialogContent className="w-[95vw] max-w-md">
           <DialogHeader>
             <DialogTitle>Call Disposition</DialogTitle>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             <div>
               <Label className="text-base font-medium">Select Disposition</Label>
@@ -291,7 +312,7 @@ const CallPage = () => {
             {(selectedDisposition === "interested" || selectedDisposition === "callback_requested") && (
               <div className="space-y-4 p-4 bg-muted/30 rounded-lg">
                 <h4 className="font-medium text-sm">Schedule Follow-up</h4>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-sm font-medium">Follow-up Date</Label>
@@ -317,7 +338,7 @@ const CallPage = () => {
                       </PopoverContent>
                     </Popover>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="followupTime" className="text-sm font-medium">
                       Preferred Time

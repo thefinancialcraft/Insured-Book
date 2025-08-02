@@ -632,7 +632,7 @@ const AdminPanel = () => {
                                                             className="text-orange-600 hover:text-orange-900 flex items-center"
                                                         >
                                                             <Clock className="w-4 h-4 mr-1" />
-                                                            Hold 1 Day
+                                                            Hold
                                                         </button>
                                                         <button
                                                             onClick={() => handleActionWithReason('suspend', user.user_id)}

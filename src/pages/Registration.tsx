@@ -67,55 +67,109 @@ const Registration = () => {
     navigate("/dashboard");
   };
 
-  return (
-    <div className="container mx-auto px-2 md:px-4 py-4 md:py-8 flex flex-col items-center animate-fade-in">
-      {/* Modern Header */}
-      <div className="w-full max-w-2xl mb-6">
-        <div className="flex items-center gap-3 mb-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleBackToDashboard}
-            className="border border-gray-200 bg-white/60 hover:bg-white/80 shadow-md"
-          >
-            <ArrowLeft className="h-5 w-5 text-purple-700" />
-          </Button>
-          <div className="flex items-center gap-3">
-            <div className="bg-gradient-to-r from-purple-600 to-purple-800 p-3 rounded-2xl shadow-lg">
-              {isEdit ? (
-                <FileText className="h-6 w-6 text-white" />
-              ) : (
-                <UserPlus className="h-6 w-6 text-white" />
-              )}
-            </div>
-            <div>
-              <h1 className="text-xl md:text-2xl font-bold text-gray-900">
-                {isEdit ? "Edit Customer" : "Customer Registration"}
-              </h1>
-              <p className="text-xs md:text-sm text-gray-600">
-                {isEdit ? "Update customer and policy details" : "Add new customer and policy details"}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+  // Mock latest entries data
+  const latestEntries = [
+    {
+      id: 1,
+      name: "Rajesh Kumar",
+      vehicle: "Maruti Suzuki Swift",
+      date: "2024-06-01"
+    },
+    {
+      id: 2,
+      name: "Priya Sharma",
+      vehicle: "Honda Activa",
+      date: "2024-05-28"
+    },
+    {
+      id: 3,
+      name: "Amit Verma",
+      vehicle: "Hyundai Creta",
+      date: "2024-05-25"
+    },
+    {
+      id: 4,
+      name: "Sunita Singh",
+      vehicle: "Tata Nexon",
+      date: "2024-05-22"
+    },
+    {
+      id: 5,
+      name: "Vikas Patel",
+      vehicle: "Hero Splendor",
+      date: "2024-05-20"
+    }
+  ];
 
-      {/* Registration Form Card */}
-      <div className="w-full max-w-2xl bg-white/80 backdrop-blur-md rounded-3xl border border-white/50 shadow-2xl p-3 md:p-8 transition-all duration-300">
-        {/* Step Indicator */}
-        <div className="flex items-center justify-center mb-6">
-          <div className="flex gap-2">
-            <div className="h-2 w-8 rounded-full bg-purple-600" />
-            <div className="h-2 w-8 rounded-full bg-purple-300" />
-            <div className="h-2 w-8 rounded-full bg-purple-100" />
+  return (
+    <div className="container mx-auto px-4 py-6">
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Left Side: Hero + Latest Entries */}
+        <div className="lg:w-1/3 w-full">
+          <div className="lg:sticky lg:top-6">
+            {/* Hero Section */}
+            <div className="relative overflow-hidden bg-gradient-to-br from-purple-600 via-purple-700 to-purple-800 rounded-3xl p-6 text-white mb-6">
+              <div className="absolute inset-0 opacity-10 pointer-events-none select-none">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-white rounded-full -translate-y-10 translate-x-10"></div>
+              </div>
+              <div className="relative z-10">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-3">
+                    {isEdit ? (
+                      <FileText className="h-6 w-6 text-white" />
+                    ) : (
+                      <UserPlus className="h-6 w-6 text-white" />
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-purple-100 text-sm font-medium">{isEdit ? "Edit Customer" : "Customer Registration"}</p>
+                    <p className="text-xs text-purple-200">{isEdit ? "Update customer and policy details" : "Add new customer and policy details"}</p>
+                  </div>
+                </div>
+                <h1 className="text-2xl lg:text-3xl font-bold leading-tight mb-2">
+                  {isEdit ? "Update Customer" : "Register New Customer"}
+                </h1>
+                <p className="text-purple-100 text-sm lg:text-base leading-relaxed">
+                  {isEdit
+                    ? "Edit and update the details for your customer and their insurance policy."
+                    : "Fill out the form to add a new customer and their policy details to your insurance business."}
+                </p>
+              </div>
+            </div>
+            {/* Latest Entries */}
+            <div className="bg-white/90 rounded-2xl border border-gray-100 p-4">
+              <h2 className="text-lg font-semibold text-gray-900 mb-3">Latest Registrations</h2>
+              <ul className="divide-y divide-gray-200">
+                {latestEntries.slice(0, 3).map(entry => (
+                  <li key={entry.id} className="py-2 flex flex-col">
+                    <span className="font-medium text-gray-800">{entry.name}</span>
+                    <span className="text-xs text-gray-500">{entry.vehicle}</span>
+                    <span className="text-xs text-purple-600">{entry.date}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
-        {/* Registration Form */}
-        <CustomerRegistration
-          onComplete={handleComplete}
-          customer={customerData}
-          isEdit={isEdit}
-        />
+        {/* Right Side: Registration Form */}
+        <div className="lg:w-2/3 w-full">
+          <div className="w-full bg-white/80 backdrop-blur-md rounded-3xl border border-white/50 p-3 md:p-8 transition-all duration-300">
+            {/* Step Indicator */}
+            <div className="flex items-center justify-center mb-6">
+              <div className="flex gap-2">
+                <div className="h-2 w-8 rounded-full bg-purple-600" />
+                <div className="h-2 w-8 rounded-full bg-purple-300" />
+                <div className="h-2 w-8 rounded-full bg-purple-100" />
+              </div>
+            </div>
+            {/* Registration Form */}
+            <CustomerRegistration
+              onComplete={handleComplete}
+              customer={customerData}
+              isEdit={isEdit}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -4,13 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
-import { 
-  Copy, 
-  FileDown, 
-  Phone, 
-  Mail, 
-  Car, 
-  FileText, 
+import {
+  Copy,
+  FileDown,
+  Phone,
+  Mail,
+  Car,
+  FileText,
   Calendar,
   User,
   MapPin,
@@ -76,7 +76,7 @@ export const CustomerDetails = ({ customer, isOpen, onClose }: CustomerDetailsPr
     try {
       const jsPDF = (await import('jspdf')).default;
       const html2canvas = (await import('html2canvas')).default;
-      
+
       // Get the dialog content element
       const element = document.querySelector('[data-radix-dialog-content]');
       if (!element) return;
@@ -108,7 +108,7 @@ export const CustomerDetails = ({ customer, isOpen, onClose }: CustomerDetailsPr
       }
 
       pdf.save(`${customer.name}_details.pdf`);
-      
+
       toast({
         title: "PDF Generated",
         description: "Customer details saved as PDF",
@@ -152,88 +152,60 @@ export const CustomerDetails = ({ customer, isOpen, onClose }: CustomerDetailsPr
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-full max-h-full w-full h-full md:max-w-2xl md:max-h-[80vh] md:w-auto md:h-auto overflow-y-auto">
-        <DialogHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Avatar className="h-16 w-16 bg-gradient-primary">
-                <AvatarFallback className="text-primary-foreground font-bold text-lg">
-                  {getInitials(customer.name)}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <DialogTitle className="text-xl">{customer.name}</DialogTitle>
-                <Badge className={`${getStatusColor(customer.status || 'active')} border text-xs mt-1`}>
-                  {(customer.status || 'active').toUpperCase()}
-                </Badge>
-              </div>
-            </div>
-            <div className="flex space-x-2">
-              <Button 
-                onClick={() => {
-                  onClose();
-                  navigate(`/registration?edit=true&customerId=${customer.id}`);
-                }} 
-                size="sm" 
-                variant="outline"
-                className="md:flex hidden"
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                Edit
-              </Button>
-              <Button 
-                onClick={() => {
-                  onClose();
-                  navigate(`/registration?edit=true&customerId=${customer.id}`);
-                }} 
-                size="sm" 
-                variant="outline"
-                className="md:hidden"
-              >
-                <FileText className="h-4 w-4" />
-              </Button>
-              <Button onClick={generatePDF} size="sm" className="bg-gradient-primary md:flex hidden">
-                <FileDown className="h-4 w-4 mr-2" />
-                Save as PDF
-              </Button>
-              <Button onClick={generatePDF} size="sm" className="bg-gradient-primary md:hidden">
-                <FileDown className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </DialogHeader>
+      <DialogContent className="max-w-full max-h-full w-full h-full md:max-w-2xl md:max-h-[90vh] md:w-auto md:h-auto overflow-y-auto bg-gradient-to-br from-white via-slate-50 to-slate-100 dark:from-muted dark:via-muted/80 dark:to-muted/90 p-0">
+        {/* Sticky/scrollable top action bar */}
+        <div className="sticky top-0 z-20 bg-white/80 dark:bg-muted/80 backdrop-blur-md flex gap-2 px-4 py-2 border-b border-muted-foreground/10 overflow-x-auto rounded-t-2xl shadow-sm">
+          <Button
+            onClick={() => {
+              onClose();
+              navigate(`/registration?edit=true&customerId=${customer.id}`);
+            }}
+            size="sm"
+            variant="outline"
+            className="flex items-center gap-2 min-w-[90px]"
+          >
+            <FileText className="h-4 w-4" />
+            <span className="hidden xs:inline">Edit</span>
+          </Button>
+          <Button onClick={generatePDF} size="sm" className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80 text-white min-w-[110px]">
+            <FileDown className="h-4 w-4" />
+            <span className="hidden xs:inline">Save PDF</span>
+          </Button>
+          <Button size="sm" className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white min-w-[90px]" onClick={() => navigate(`/call-management?customerId=${customer.id}`)}>
+            <Phone className="h-4 w-4" />
+            <span className="hidden xs:inline">Call</span>
+          </Button>
+          {/* Add WhatsApp or other actions here if needed */}
+        </div>
 
-        <div className="space-y-6 mt-6">
+        {/* Main content */}
+        <div className="flex flex-col items-center w-full px-2 md:px-6 py-4 gap-4">
+          {/* Avatar, Name, Status */}
+          <div className="flex flex-col items-center w-full mb-2">
+            <Avatar className="h-20 w-20 border-4 border-primary/30 shadow-lg mb-2">
+              <AvatarFallback className="text-primary-foreground font-bold text-2xl">
+                {getInitials(customer.name)}
+              </AvatarFallback>
+            </Avatar>
+            <DialogTitle className="text-xl font-bold text-center mb-1">{customer.name}</DialogTitle>
+            <Badge className={`rounded-full px-4 py-1 text-xs font-semibold tracking-wide shadow ${getStatusColor(customer.status || 'active')}`}>{(customer.status || 'active').toUpperCase()}</Badge>
+          </div>
+
           {/* Contact Information */}
-          <div className="space-y-3">
-            <h3 className="text-lg font-semibold flex items-center">
-              <User className="h-5 w-5 mr-2" />
-              Contact Information
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">Phone Number</p>
-                    <p className="text-sm font-medium">{customer.contact}</p>
-                  </div>
+          <div className="rounded-2xl shadow-md bg-white/80 dark:bg-muted/80 p-4 w-full max-w-2xl transition hover:shadow-lg">
+            <div className="flex items-center mb-3">
+              <User className="h-5 w-5 mr-2 text-primary" />
+              <span className="font-semibold text-base md:text-lg">Contact Information</span>
+            </div>
+            <div className="flex flex-col gap-3 md:grid md:grid-cols-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-xs text-muted-foreground">Phone</div>
+                  <div className="font-medium">{customer.contact}</div>
                 </div>
-                <div className="flex space-x-2">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => copyToClipboard(customer.contact, "Phone Number")}
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="bg-green-600 hover:bg-green-700"
-                    onClick={() => navigate(`/call-management?customerId=${customer.id}`)}
-                  >
-                    <Phone className="h-4 w-4" />
-                  </Button>
+                <div className="flex gap-1">
+                  <Button size="icon" variant="ghost" onClick={() => copyToClipboard(customer.contact, "Phone Number")}><Copy className="h-4 w-4" /></Button>
+                  <Button size="icon" className="bg-green-600 hover:bg-green-700 text-white" onClick={() => navigate(`/call-management?customerId=${customer.id}`)}><Phone className="h-4 w-4" /></Button>
                 </div>
               </div>
               <FieldWithCopy icon={Mail} label="Email Address" value={customer.email} />
@@ -242,12 +214,12 @@ export const CustomerDetails = ({ customer, isOpen, onClose }: CustomerDetailsPr
           </div>
 
           {/* Vehicle Information */}
-          <div className="space-y-3">
-            <h3 className="text-lg font-semibold flex items-center">
-              <Car className="h-5 w-5 mr-2" />
-              Vehicle Information
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="rounded-2xl shadow-md bg-white/80 dark:bg-muted/80 p-4 w-full max-w-2xl transition hover:shadow-lg">
+            <div className="flex items-center mb-3">
+              <Car className="h-5 w-5 mr-2 text-primary" />
+              <span className="font-semibold text-base md:text-lg">Vehicle Information</span>
+            </div>
+            <div className="flex flex-col gap-3 md:grid md:grid-cols-2">
               <FieldWithCopy icon={FileText} label="RC Number" value={customer.rcNumber} />
               <FieldWithCopy icon={Car} label="Vehicle Type" value={customer.vehicleType} />
               <FieldWithCopy icon={Car} label="Brand & Model" value={`${customer.brand} ${customer.model}`} />
@@ -257,53 +229,41 @@ export const CustomerDetails = ({ customer, isOpen, onClose }: CustomerDetailsPr
 
           {/* Document Information */}
           {(customer.aadharNo || customer.panNo) && (
-            <div className="space-y-3">
-              <h3 className="text-lg font-semibold flex items-center">
-                <CreditCard className="h-5 w-5 mr-2" />
-                Document Information
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {customer.aadharNo && (
-                  <FieldWithCopy icon={CreditCard} label="Aadhar Number" value={customer.aadharNo} />
-                )}
-                {customer.panNo && (
-                  <FieldWithCopy icon={CreditCard} label="PAN Number" value={customer.panNo} />
-                )}
-                {customer.previousCompany && (
-                  <FieldWithCopy icon={Shield} label="Previous Company" value={customer.previousCompany} />
-                )}
+            <div className="rounded-2xl shadow-md bg-white/80 dark:bg-muted/80 p-4 w-full max-w-2xl transition hover:shadow-lg">
+              <div className="flex items-center mb-3">
+                <CreditCard className="h-5 w-5 mr-2 text-primary" />
+                <span className="font-semibold text-base md:text-lg">Document Information</span>
+              </div>
+              <div className="flex flex-col gap-3 md:grid md:grid-cols-2">
+                {customer.aadharNo && <FieldWithCopy icon={CreditCard} label="Aadhar Number" value={customer.aadharNo} />}
+                {customer.panNo && <FieldWithCopy icon={CreditCard} label="PAN Number" value={customer.panNo} />}
+                {customer.previousCompany && <FieldWithCopy icon={Shield} label="Previous Company" value={customer.previousCompany} />}
               </div>
             </div>
           )}
 
           {/* Nominee Information */}
           {(customer.nomineeName || customer.nomineeDOB || customer.nomineeRelation) && (
-            <div className="space-y-3">
-              <h3 className="text-lg font-semibold flex items-center">
-                <User className="h-5 w-5 mr-2" />
-                Nominee Information
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {customer.nomineeName && (
-                  <FieldWithCopy icon={User} label="Nominee Name" value={customer.nomineeName} />
-                )}
-                {customer.nomineeDOB && (
-                  <FieldWithCopy icon={Calendar} label="Nominee DOB" value={customer.nomineeDOB} />
-                )}
-                {customer.nomineeRelation && (
-                  <FieldWithCopy icon={User} label="Relation" value={customer.nomineeRelation} />
-                )}
+            <div className="rounded-2xl shadow-md bg-white/80 dark:bg-muted/80 p-4 w-full max-w-2xl transition hover:shadow-lg">
+              <div className="flex items-center mb-3">
+                <User className="h-5 w-5 mr-2 text-primary" />
+                <span className="font-semibold text-base md:text-lg">Nominee Information</span>
+              </div>
+              <div className="flex flex-col gap-3 md:grid md:grid-cols-2">
+                {customer.nomineeName && <FieldWithCopy icon={User} label="Nominee Name" value={customer.nomineeName} />}
+                {customer.nomineeDOB && <FieldWithCopy icon={Calendar} label="Nominee DOB" value={customer.nomineeDOB} />}
+                {customer.nomineeRelation && <FieldWithCopy icon={User} label="Relation" value={customer.nomineeRelation} />}
               </div>
             </div>
           )}
 
           {/* Documents */}
           {customer.documents && Object.keys(customer.documents).length > 0 && (
-            <div className="space-y-3">
-              <h3 className="text-lg font-semibold flex items-center">
-                <FileText className="h-5 w-5 mr-2" />
-                Documents
-              </h3>
+            <div className="rounded-2xl shadow-md bg-white/80 dark:bg-muted/80 p-4 w-full max-w-2xl transition hover:shadow-lg">
+              <div className="flex items-center mb-3">
+                <FileText className="h-5 w-5 mr-2 text-primary" />
+                <span className="font-semibold text-base md:text-lg">Documents</span>
+              </div>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {customer.documents.rcFront && (
                   <div className="bg-muted/30 p-3 rounded-lg text-center">
@@ -346,20 +306,20 @@ export const CustomerDetails = ({ customer, isOpen, onClose }: CustomerDetailsPr
           )}
 
           {/* Expiry Status */}
-          <div className="bg-gradient-card p-4 rounded-lg">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Calendar className="h-5 w-5 text-muted-foreground" />
-                <span className="font-medium">Policy Status</span>
-              </div>
-              <Badge className={`${getStatusColor(customer.status || 'active')} border`}>
-                {customer.daysToExpiry || 0} days remaining
-              </Badge>
+          <div className="rounded-2xl shadow-md bg-gradient-to-r from-primary/10 to-primary/5 p-4 w-full max-w-2xl flex items-center justify-between transition hover:shadow-lg">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-primary" />
+              <span className="font-medium">Policy Status</span>
             </div>
+            <Badge className={`rounded-full px-4 py-1 text-xs font-semibold tracking-wide shadow ${getStatusColor(customer.status || 'active')}`}>{customer.daysToExpiry || 0} days remaining</Badge>
           </div>
 
           {/* Call Management Section */}
-          <div className="space-y-6">
+          <div className="rounded-2xl shadow-md bg-white/80 dark:bg-muted/80 p-4 w-full max-w-2xl transition hover:shadow-lg">
+            <div className="flex items-center mb-3">
+              <FileText className="h-5 w-5 mr-2 text-primary" />
+              <span className="font-semibold text-base md:text-lg">Call Management</span>
+            </div>
             <CallTimeline customerId={customer.id.toString()} customerName={customer.name} />
           </div>
         </div>

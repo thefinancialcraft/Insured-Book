@@ -7,13 +7,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  FileText, 
-  Upload, 
-  Camera, 
-  Car, 
-  User, 
-  Phone, 
+import {
+  FileText,
+  Upload,
+  Camera,
+  Car,
+  User,
+  Phone,
   Calendar,
   CreditCard,
   Shield,
@@ -45,7 +45,7 @@ export const CustomerRegistration = ({ onComplete, customer, isEdit = false }: C
     vehicleBrand: customer?.brand || "",
     modelName: customer?.model || "",
     expiryDate: customer?.expiryDate || "",
-    
+
     // Full registration additional fields
     email: customer?.email || "",
     previousCompany: customer?.previousCompany || "",
@@ -65,7 +65,7 @@ export const CustomerRegistration = ({ onComplete, customer, isEdit = false }: C
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Basic validation
     if (!formData.rcNumber || !formData.name || !formData.contact) {
       toast({
@@ -119,7 +119,7 @@ export const CustomerRegistration = ({ onComplete, customer, isEdit = false }: C
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Registration Type Selector - Hide descriptions on mobile */}
-      <Card className="bg-gradient-card shadow-card border-0 hidden md:block">
+      <Card className="bg-gradient-to-br from-purple-100 via-white to-purple-50/80 border-0 hidden md:block">
         <CardHeader>
           <CardTitle className="flex items-center text-foreground">
             <User className="mr-2 h-5 w-5" />
@@ -128,12 +128,11 @@ export const CustomerRegistration = ({ onComplete, customer, isEdit = false }: C
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card 
-              className={`cursor-pointer transition-all duration-300 ${
-                registrationType === "quick" 
-                  ? "border-primary bg-primary/5 shadow-primary" 
-                  : "hover:shadow-hover"
-              }`}
+            <Card
+              className={`cursor-pointer transition-all duration-300 rounded-2xl border-2 ${registrationType === "quick"
+                  ? "border-purple-500 bg-purple-50/80"
+                  : "hover:border-purple-200"
+                }`}
               onClick={() => setRegistrationType("quick")}
             >
               <CardContent className="p-6">
@@ -163,12 +162,11 @@ export const CustomerRegistration = ({ onComplete, customer, isEdit = false }: C
               </CardContent>
             </Card>
 
-            <Card 
-              className={`cursor-pointer transition-all duration-300 ${
-                registrationType === "full" 
-                  ? "border-primary bg-primary/5 shadow-primary" 
-                  : "hover:shadow-hover"
-              }`}
+            <Card
+              className={`cursor-pointer transition-all duration-300 rounded-2xl border-2 ${registrationType === "full"
+                  ? "border-purple-500 bg-purple-50/80"
+                  : "hover:border-purple-200"
+                }`}
               onClick={() => setRegistrationType("full")}
             >
               <CardContent className="p-6">
@@ -203,7 +201,7 @@ export const CustomerRegistration = ({ onComplete, customer, isEdit = false }: C
 
       {/* Mobile Registration Type Selector */}
       <div className="md:hidden flex space-x-2 mb-4">
-        <Button 
+        <Button
           variant={registrationType === "quick" ? "default" : "outline"}
           onClick={() => setRegistrationType("quick")}
           className="flex-1"
@@ -211,7 +209,7 @@ export const CustomerRegistration = ({ onComplete, customer, isEdit = false }: C
         >
           Quick
         </Button>
-        <Button 
+        <Button
           variant={registrationType === "full" ? "default" : "outline"}
           onClick={() => setRegistrationType("full")}
           className="flex-1"
@@ -226,7 +224,7 @@ export const CustomerRegistration = ({ onComplete, customer, isEdit = false }: C
         <Tabs value={registrationType} className="space-y-6">
           <TabsContent value="quick" className="space-y-6">
             {/* Personal Information */}
-            <Card className="bg-gradient-card shadow-card border-0">
+            <Card className="bg-gradient-to-br from-white via-purple-50 to-purple-100/80 border-0 rounded-2xl">
               <CardHeader>
                 <CardTitle className="flex items-center text-foreground">
                   <User className="mr-2 h-5 w-5" />
@@ -234,105 +232,105 @@ export const CustomerRegistration = ({ onComplete, customer, isEdit = false }: C
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                   <div className="space-y-2">
-                     <Label htmlFor="name" className="text-sm font-medium">
-                       Full Name *
-                     </Label>
-                     <Input
-                       id="name"
-                       placeholder="Enter full name"
-                       value={formData.name}
-                       onChange={(e) => handleInputChange("name", e.target.value)}
-                       className="h-12 border-2 focus:border-primary transition-colors"
-                     />
-                   </div>
-                   
-                   <div className="space-y-2">
-                     <Label htmlFor="contact" className="text-sm font-medium">
-                       Contact Number *
-                     </Label>
-                     <Input
-                       id="contact"
-                       placeholder="+91 98765 43210"
-                       value={formData.contact}
-                       onChange={(e) => handleInputChange("contact", e.target.value)}
-                       className="h-12 border-2 focus:border-primary transition-colors"
-                     />
-                   </div>
-                  
-                   <div className="space-y-2">
-                     <Label htmlFor="dob" className="text-sm font-medium">Date of Birth</Label>
-                     <Popover>
-                       <PopoverTrigger asChild>
-                         <Button
-                           variant="outline"
-                           className="w-full justify-start text-left font-normal h-12 border-2 hover:border-primary transition-colors"
-                         >
-                           <Calendar className="mr-2 h-4 w-4" />
-                           {formData.dob ? format(new Date(formData.dob), "PPP") : "Pick a date"}
-                         </Button>
-                       </PopoverTrigger>
-                       <PopoverContent className="w-auto p-0" align="start">
-                         <CalendarComponent
-                           mode="single"
-                           selected={formData.dob ? new Date(formData.dob) : undefined}
-                           onSelect={(date) => handleInputChange("dob", date ? format(date, "yyyy-MM-dd") : "")}
-                           initialFocus
-                           className="pointer-events-auto"
-                         />
-                       </PopoverContent>
-                     </Popover>
-                   </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name" className="text-sm font-medium">
+                      Full Name *
+                    </Label>
+                    <Input
+                      id="name"
+                      placeholder="Enter full name"
+                      value={formData.name}
+                      onChange={(e) => handleInputChange("name", e.target.value)}
+                      className="h-12 border-2 focus:border-primary transition-colors"
+                    />
+                  </div>
 
-                   <div className="space-y-2">
-                     <Label htmlFor="rcNumber" className="text-sm font-medium">
-                       RC Number *
-                     </Label>
-                     <Input
-                       id="rcNumber"
-                       placeholder="DL-01-AB-1234"
-                       value={formData.rcNumber}
-                       onChange={(e) => handleInputChange("rcNumber", e.target.value)}
-                       className="uppercase h-12 border-2 focus:border-primary transition-colors"
-                     />
-                   </div>
-                 </div>
-               </CardContent>
-             </Card>
+                  <div className="space-y-2">
+                    <Label htmlFor="contact" className="text-sm font-medium">
+                      Contact Number *
+                    </Label>
+                    <Input
+                      id="contact"
+                      placeholder="+91 98765 43210"
+                      value={formData.contact}
+                      onChange={(e) => handleInputChange("contact", e.target.value)}
+                      className="h-12 border-2 focus:border-primary transition-colors"
+                    />
+                  </div>
 
-             {/* Vehicle Information */}
-             <Card className="bg-gradient-card shadow-card border-0">
-               <CardHeader>
-                 <CardTitle className="flex items-center text-foreground">
-                   <Car className="mr-2 h-5 w-5" />
-                   Vehicle Information
-                 </CardTitle>
-               </CardHeader>
-               <CardContent className="space-y-4">
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                   <div className="space-y-2">
-                     <Label htmlFor="vehicleCategory" className="text-sm font-medium">Vehicle Category</Label>
-                     <Select value={formData.vehicleCategory} onValueChange={(value) => handleInputChange("vehicleCategory", value)}>
-                       <SelectTrigger className="h-12 border-2 focus:border-primary transition-colors">
-                         <SelectValue placeholder="Select category" />
-                       </SelectTrigger>
-                       <SelectContent>
-                         {vehicleCategories.map((category) => {
-                           const IconComponent = category.icon;
-                           return (
-                             <SelectItem key={category.value} value={category.value}>
-                               <div className="flex items-center">
-                                 <IconComponent className="mr-2 h-4 w-4" />
-                                 {category.label}
-                               </div>
-                             </SelectItem>
-                           );
-                         })}
-                       </SelectContent>
-                     </Select>
-                   </div>
-                  
+                  <div className="space-y-2">
+                    <Label htmlFor="dob" className="text-sm font-medium">Date of Birth</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start text-left font-normal h-12 border-2 hover:border-primary transition-colors"
+                        >
+                          <Calendar className="mr-2 h-4 w-4" />
+                          {formData.dob ? format(new Date(formData.dob), "PPP") : "Pick a date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <CalendarComponent
+                          mode="single"
+                          selected={formData.dob ? new Date(formData.dob) : undefined}
+                          onSelect={(date) => handleInputChange("dob", date ? format(date, "yyyy-MM-dd") : "")}
+                          initialFocus
+                          className="pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="rcNumber" className="text-sm font-medium">
+                      RC Number *
+                    </Label>
+                    <Input
+                      id="rcNumber"
+                      placeholder="DL-01-AB-1234"
+                      value={formData.rcNumber}
+                      onChange={(e) => handleInputChange("rcNumber", e.target.value)}
+                      className="uppercase h-12 border-2 focus:border-primary transition-colors"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Vehicle Information */}
+            <Card className="bg-gradient-to-br from-white via-purple-50 to-purple-100/80 border-0 rounded-2xl">
+              <CardHeader>
+                <CardTitle className="flex items-center text-foreground">
+                  <Car className="mr-2 h-5 w-5" />
+                  Vehicle Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="vehicleCategory" className="text-sm font-medium">Vehicle Category</Label>
+                    <Select value={formData.vehicleCategory} onValueChange={(value) => handleInputChange("vehicleCategory", value)}>
+                      <SelectTrigger className="h-12 border-2 focus:border-primary transition-colors">
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {vehicleCategories.map((category) => {
+                          const IconComponent = category.icon;
+                          return (
+                            <SelectItem key={category.value} value={category.value}>
+                              <div className="flex items-center">
+                                <IconComponent className="mr-2 h-4 w-4" />
+                                {category.label}
+                              </div>
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="vehicleBrand" className="text-sm font-medium">Vehicle Brand</Label>
                     <Select value={formData.vehicleBrand} onValueChange={(value) => handleInputChange("vehicleBrand", value)}>
@@ -348,64 +346,64 @@ export const CustomerRegistration = ({ onComplete, customer, isEdit = false }: C
                       </SelectContent>
                     </Select>
                   </div>
-                  
-                   <div className="space-y-2">
-                     <Label htmlFor="modelName" className="text-sm font-medium">
-                       Model Name
-                     </Label>
-                     <Input
-                       id="modelName"
-                       placeholder="e.g., Swift, Activa, Creta"
-                       value={formData.modelName}
-                       onChange={(e) => handleInputChange("modelName", e.target.value)}
-                       className="h-12 border-2 focus:border-primary transition-colors"
-                     />
-                   </div>
-                 </div>
-               </CardContent>
-             </Card>
 
-             {/* Policy Information */}
-             <Card className="bg-gradient-card shadow-card border-0">
-               <CardHeader>
-                 <CardTitle className="flex items-center text-foreground">
-                   <Shield className="mr-2 h-5 w-5" />
-                   Policy Information
-                 </CardTitle>
-               </CardHeader>
-               <CardContent className="space-y-4">
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                   <div className="space-y-2">
-                     <Label htmlFor="expiryDate" className="text-sm font-medium">Policy Expiry Date</Label>
-                     <Popover>
-                       <PopoverTrigger asChild>
-                         <Button
-                           variant="outline"
-                           className="w-full justify-start text-left font-normal h-12 border-2 hover:border-primary transition-colors"
-                         >
-                           <Calendar className="mr-2 h-4 w-4" />
-                           {formData.expiryDate ? format(new Date(formData.expiryDate), "PPP") : "Pick expiry date"}
-                         </Button>
-                       </PopoverTrigger>
-                       <PopoverContent className="w-auto p-0" align="start">
-                         <CalendarComponent
-                           mode="single"
-                           selected={formData.expiryDate ? new Date(formData.expiryDate) : undefined}
-                           onSelect={(date) => handleInputChange("expiryDate", date ? format(date, "yyyy-MM-dd") : "")}
-                           initialFocus
-                           className="pointer-events-auto"
-                         />
-                       </PopoverContent>
-                     </Popover>
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="modelName" className="text-sm font-medium">
+                      Model Name
+                    </Label>
+                    <Input
+                      id="modelName"
+                      placeholder="e.g., Swift, Activa, Creta"
+                      value={formData.modelName}
+                      onChange={(e) => handleInputChange("modelName", e.target.value)}
+                      className="h-12 border-2 focus:border-primary transition-colors"
+                    />
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Policy Information */}
+            <Card className="bg-gradient-to-br from-white via-purple-50 to-purple-100/80 border-0 rounded-2xl">
+              <CardHeader>
+                <CardTitle className="flex items-center text-foreground">
+                  <Shield className="mr-2 h-5 w-5" />
+                  Policy Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="expiryDate" className="text-sm font-medium">Policy Expiry Date</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start text-left font-normal h-12 border-2 hover:border-primary transition-colors"
+                        >
+                          <Calendar className="mr-2 h-4 w-4" />
+                          {formData.expiryDate ? format(new Date(formData.expiryDate), "PPP") : "Pick expiry date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <CalendarComponent
+                          mode="single"
+                          selected={formData.expiryDate ? new Date(formData.expiryDate) : undefined}
+                          onSelect={(date) => handleInputChange("expiryDate", date ? format(date, "yyyy-MM-dd") : "")}
+                          initialFocus
+                          className="pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="full" className="space-y-6">
             {/* Basic Information */}
-            <Card className="bg-gradient-card shadow-card border-0">
+            <Card className="bg-gradient-to-br from-white via-purple-50 to-purple-100/80 border-0 rounded-2xl">
               <CardHeader>
                 <CardTitle className="flex items-center text-foreground">
                   <User className="mr-2 h-5 w-5" />
@@ -424,7 +422,7 @@ export const CustomerRegistration = ({ onComplete, customer, isEdit = false }: C
                       className="uppercase"
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="name">Full Name *</Label>
                     <Input
@@ -434,7 +432,7 @@ export const CustomerRegistration = ({ onComplete, customer, isEdit = false }: C
                       onChange={(e) => handleInputChange("name", e.target.value)}
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="contact">Contact Number *</Label>
                     <Input
@@ -444,55 +442,55 @@ export const CustomerRegistration = ({ onComplete, customer, isEdit = false }: C
                       onChange={(e) => handleInputChange("contact", e.target.value)}
                     />
                   </div>
-                  
-                   <div className="space-y-2">
-                     <Label htmlFor="email" className="flex items-center">
-                       <User className="mr-2 h-4 w-4" />
-                       Email Address
-                     </Label>
-                     <Input
-                       id="email"
-                       type="email"
-                       placeholder="example@email.com"
-                       value={formData.email}
-                       onChange={(e) => handleInputChange("email", e.target.value)}
-                       className="pl-10"
-                     />
-                   </div>
-                   
-                   <div className="space-y-2">
-                     <Label htmlFor="aadharNumber" className="flex items-center">
-                       <CreditCard className="mr-2 h-4 w-4" />
-                       Aadhaar Number
-                     </Label>
-                     <Input
-                       id="aadharNumber"
-                       placeholder="XXXX XXXX XXXX"
-                       value={formData.aadharNumber}
-                       onChange={(e) => handleInputChange("aadharNumber", e.target.value)}
-                       className="pl-10"
-                     />
-                   </div>
-                   
-                   <div className="space-y-2">
-                     <Label htmlFor="panNumber" className="flex items-center">
-                       <CreditCard className="mr-2 h-4 w-4" />
-                       PAN Number
-                     </Label>
-                     <Input
-                       id="panNumber"
-                       placeholder="ABCDE1234F"
-                       value={formData.panNumber}
-                       onChange={(e) => handleInputChange("panNumber", e.target.value)}
-                       className="uppercase pl-10"
-                     />
-                   </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="flex items-center">
+                      <User className="mr-2 h-4 w-4" />
+                      Email Address
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="example@email.com"
+                      value={formData.email}
+                      onChange={(e) => handleInputChange("email", e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="aadharNumber" className="flex items-center">
+                      <CreditCard className="mr-2 h-4 w-4" />
+                      Aadhaar Number
+                    </Label>
+                    <Input
+                      id="aadharNumber"
+                      placeholder="XXXX XXXX XXXX"
+                      value={formData.aadharNumber}
+                      onChange={(e) => handleInputChange("aadharNumber", e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="panNumber" className="flex items-center">
+                      <CreditCard className="mr-2 h-4 w-4" />
+                      PAN Number
+                    </Label>
+                    <Input
+                      id="panNumber"
+                      placeholder="ABCDE1234F"
+                      value={formData.panNumber}
+                      onChange={(e) => handleInputChange("panNumber", e.target.value)}
+                      className="uppercase pl-10"
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Vehicle Information */}
-            <Card className="bg-gradient-card shadow-card border-0">
+            {/* Vehicle & Policy Information */}
+            <Card className="bg-gradient-to-br from-white via-purple-50 to-purple-100/80 border-0 rounded-2xl">
               <CardHeader>
                 <CardTitle className="flex items-center text-foreground">
                   <Car className="mr-2 h-5 w-5" />
@@ -507,22 +505,22 @@ export const CustomerRegistration = ({ onComplete, customer, isEdit = false }: C
                       <SelectTrigger>
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
-                       <SelectContent>
-                         {vehicleCategories.map((category) => {
-                           const IconComponent = category.icon;
-                           return (
-                             <SelectItem key={category.value} value={category.value}>
-                               <div className="flex items-center">
-                                 <IconComponent className="mr-2 h-4 w-4" />
-                                 {category.label}
-                               </div>
-                             </SelectItem>
-                           );
-                         })}
-                       </SelectContent>
+                      <SelectContent>
+                        {vehicleCategories.map((category) => {
+                          const IconComponent = category.icon;
+                          return (
+                            <SelectItem key={category.value} value={category.value}>
+                              <div className="flex items-center">
+                                <IconComponent className="mr-2 h-4 w-4" />
+                                {category.label}
+                              </div>
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="vehicleBrand">Vehicle Brand</Label>
                     <Select value={formData.vehicleBrand} onValueChange={(value) => handleInputChange("vehicleBrand", value)}>
@@ -538,7 +536,7 @@ export const CustomerRegistration = ({ onComplete, customer, isEdit = false }: C
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="modelName">Model Name</Label>
                     <Input
@@ -548,7 +546,7 @@ export const CustomerRegistration = ({ onComplete, customer, isEdit = false }: C
                       onChange={(e) => handleInputChange("modelName", e.target.value)}
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="previousCompany">Previous Insurance Company</Label>
                     <Input
@@ -558,7 +556,7 @@ export const CustomerRegistration = ({ onComplete, customer, isEdit = false }: C
                       onChange={(e) => handleInputChange("previousCompany", e.target.value)}
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="expiryDate">Policy Expiry Date</Label>
                     <Input
@@ -573,7 +571,7 @@ export const CustomerRegistration = ({ onComplete, customer, isEdit = false }: C
             </Card>
 
             {/* Nominee Information */}
-            <Card className="bg-gradient-card shadow-card border-0">
+            <Card className="bg-gradient-to-br from-white via-purple-50 to-purple-100/80 border-0 rounded-2xl">
               <CardHeader>
                 <CardTitle className="flex items-center text-foreground">
                   <Shield className="mr-2 h-5 w-5" />
@@ -591,7 +589,7 @@ export const CustomerRegistration = ({ onComplete, customer, isEdit = false }: C
                       onChange={(e) => handleInputChange("nomineeName", e.target.value)}
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="nomineeDob">Nominee Date of Birth</Label>
                     <Input
@@ -601,7 +599,7 @@ export const CustomerRegistration = ({ onComplete, customer, isEdit = false }: C
                       onChange={(e) => handleInputChange("nomineeDob", e.target.value)}
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="nomineeRelation">Relationship</Label>
                     <Select value={formData.nomineeRelation} onValueChange={(value) => handleInputChange("nomineeRelation", value)}>
@@ -622,7 +620,7 @@ export const CustomerRegistration = ({ onComplete, customer, isEdit = false }: C
             </Card>
 
             {/* Document Upload */}
-            <Card className="bg-gradient-card shadow-card border-0">
+            <Card className="bg-gradient-to-br from-white via-purple-50 to-purple-100/80 border-0 rounded-2xl">
               <CardHeader>
                 <CardTitle className="flex items-center text-foreground">
                   <FileText className="mr-2 h-5 w-5" />
@@ -641,34 +639,34 @@ export const CustomerRegistration = ({ onComplete, customer, isEdit = false }: C
                   ].map((doc, index) => (
                     <div key={index} className="space-y-2">
                       <Label>{doc.label} {doc.required && "*"}</Label>
-                       <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary transition-colors cursor-pointer">
-                         <input
-                           type="file"
-                           accept=".pdf,.jpg,.jpeg,.png"
-                           className="hidden"
-                           id={`file-${index}`}
-                           onChange={(e) => {
-                             if (e.target.files && e.target.files[0]) {
-                               toast({
-                                 title: "File Selected",
-                                 description: `${doc.label}: ${e.target.files[0].name}`
-                               });
-                             }
-                           }}
-                         />
-                         <label htmlFor={`file-${index}`} className="flex flex-col items-center space-y-2 cursor-pointer">
-                           <div className="flex space-x-2">
-                             <Upload className="h-8 w-8 text-muted-foreground" />
-                             <Camera className="h-8 w-8 text-muted-foreground" />
-                           </div>
-                           <p className="text-sm text-muted-foreground">
-                             Drop files here or click to upload
-                           </p>
-                           <p className="text-xs text-muted-foreground">
-                             PDF, JPG, PNG (max 5MB)
-                           </p>
-                         </label>
-                       </div>
+                      <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary transition-colors cursor-pointer">
+                        <input
+                          type="file"
+                          accept=".pdf,.jpg,.jpeg,.png"
+                          className="hidden"
+                          id={`file-${index}`}
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              toast({
+                                title: "File Selected",
+                                description: `${doc.label}: ${e.target.files[0].name}`
+                              });
+                            }
+                          }}
+                        />
+                        <label htmlFor={`file-${index}`} className="flex flex-col items-center space-y-2 cursor-pointer">
+                          <div className="flex space-x-2">
+                            <Upload className="h-8 w-8 text-muted-foreground" />
+                            <Camera className="h-8 w-8 text-muted-foreground" />
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            Drop files here or click to upload
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            PDF, JPG, PNG (max 5MB)
+                          </p>
+                        </label>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -677,19 +675,19 @@ export const CustomerRegistration = ({ onComplete, customer, isEdit = false }: C
           </TabsContent>
         </Tabs>
 
-         {/* Submit Buttons */}
-         <div className="flex justify-end space-x-4">
-           <Button 
-             type="button" 
-             variant="outline"
-             onClick={() => onComplete()}
-           >
-             Cancel
-           </Button>
-           <Button type="submit" className="bg-gradient-primary shadow-primary">
-             {isEdit ? 'Update Customer' : 'Register Customer'}
-           </Button>
-         </div>
+        {/* Submit Buttons */}
+        <div className="flex justify-end space-x-4 mt-8">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onComplete()}
+          >
+            Cancel
+          </Button>
+          <Button type="submit" className="bg-gradient-to-r from-purple-600 to-purple-800 text-white">
+            {isEdit ? 'Update Customer' : 'Register Customer'}
+          </Button>
+        </div>
       </form>
     </div>
   );

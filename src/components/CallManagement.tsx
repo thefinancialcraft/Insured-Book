@@ -9,12 +9,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  Phone, 
-  PhoneOff, 
-  Calendar as CalendarIcon, 
-  Clock, 
-  MessageSquare, 
+import {
+  Phone,
+  PhoneOff,
+  Calendar as CalendarIcon,
+  Clock,
+  MessageSquare,
   CheckCircle,
   PhoneCall,
   PhoneIncoming,
@@ -85,7 +85,7 @@ const CallManagement = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const customerIdFromUrl = searchParams.get('customerId');
-  
+
   const [isCallActive, setIsCallActive] = useState(false);
   const [currentCall, setCurrentCall] = useState<Customer | null>(null);
   const [showDispositionDialog, setShowDispositionDialog] = useState(false);
@@ -153,7 +153,7 @@ const CallManagement = () => {
         setCallDuration(Math.floor((Date.now() - callState.startTime) / 1000));
         setShowCallDetails(true);
         loadCustomerHistory(customer.id);
-        
+
         toast({
           title: "Call Running",
           description: `Ongoing call with ${customer.name}`,
@@ -203,7 +203,7 @@ const CallManagement = () => {
 
   const startCall = () => {
     if (!currentCall) return;
-    
+
     // Navigate to the call page with customer details
     navigate(`/call?customerId=${currentCall.id}&customerName=${encodeURIComponent(currentCall.name)}&customerPhone=${encodeURIComponent(currentCall.phone)}`);
   };
@@ -221,7 +221,7 @@ const CallManagement = () => {
     setIsCallActive(false);
     setShowCallDetails(false);
     localStorage.removeItem('activeCall');
-    
+
     // Show disposition dialog to mark call outcome
     setShowDispositionDialog(true);
   };
@@ -245,7 +245,7 @@ const CallManagement = () => {
     };
 
     setCallHistory(prev => [newRecord, ...prev]);
-    
+
     // Reset form and call state
     setShowDispositionDialog(false);
     setCurrentCall(null);
@@ -254,7 +254,7 @@ const CallManagement = () => {
     setNextCallDate(undefined);
     setCallDuration(0);
     setCallStatus('idle');
-    
+
     toast({
       title: "Call Completed",
       description: "Call disposition saved successfully",
@@ -283,15 +283,15 @@ const CallManagement = () => {
     return { total, connected, scheduled, converted };
   };
 
-  const scheduledCalls = callHistory.filter(call => 
+  const scheduledCalls = callHistory.filter(call =>
     call.nextCallDate && format(call.nextCallDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')
   );
 
-  const overdueCalls = callHistory.filter(call => 
+  const overdueCalls = callHistory.filter(call =>
     call.nextCallDate && call.nextCallDate < new Date() && call.followUpRequired
   );
 
-  const upcomingCalls = callHistory.filter(call => 
+  const upcomingCalls = callHistory.filter(call =>
     call.nextCallDate && call.nextCallDate > new Date() && call.followUpRequired
   );
 
@@ -435,10 +435,10 @@ const CallManagement = () => {
                   </div>
                   <div className="space-y-2">
                     <div className="w-full bg-background rounded-full h-2">
-                      <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${(stats.total/150)*100}%` }}></div>
+                      <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${(stats.total / 150) * 100}%` }}></div>
                     </div>
                     <div className="w-full bg-background rounded-full h-2">
-                      <div className="bg-green-500 h-2 rounded-full" style={{ width: `${(stats.converted/30)*100}%` }}></div>
+                      <div className="bg-green-500 h-2 rounded-full" style={{ width: `${(stats.converted / 30) * 100}%` }}></div>
                     </div>
                   </div>
                 </div>
@@ -930,8 +930,8 @@ const CallManagement = () => {
                 <div className={cn(
                   "h-2 w-2 rounded-full mr-2 animate-pulse",
                   callStatus === 'connected' ? "bg-green-500" :
-                  callStatus === 'connecting' ? "bg-yellow-500" :
-                  callStatus === 'hold' ? "bg-orange-500" : "bg-red-500"
+                    callStatus === 'connecting' ? "bg-yellow-500" :
+                      callStatus === 'hold' ? "bg-orange-500" : "bg-red-500"
                 )} />
                 <span>Calling {currentCall.name}</span>
               </div>
@@ -956,7 +956,7 @@ const CallManagement = () => {
                   {callStatus.charAt(0).toUpperCase() + callStatus.slice(1)} • {currentCall.phone}
                 </div>
               </div>
-              
+
               {/* Recent Activity During Call */}
               {previousCallHistory.length > 0 && (
                 <div className="space-y-2">
@@ -1001,7 +1001,7 @@ const CallManagement = () => {
               Review customer history and connect call with {currentCall?.name}
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4 max-h-96 overflow-y-auto">
             {/* Customer Info */}
             {currentCall && (
@@ -1055,7 +1055,7 @@ const CallManagement = () => {
               <Button variant="outline" onClick={() => setShowCallDetails(false)}>
                 Cancel
               </Button>
-              <Button 
+              <Button
                 onClick={startCall}
                 className="bg-gradient-primary"
               >
@@ -1079,7 +1079,7 @@ const CallManagement = () => {
               Mark disposition for call with {currentCall?.name}
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4 max-h-96 overflow-y-auto">
             {/* Customer Info */}
             {currentCall && (
@@ -1157,8 +1157,8 @@ const CallManagement = () => {
               <Button variant="outline" onClick={() => setShowDispositionDialog(false)}>
                 Cancel
               </Button>
-              <Button 
-                onClick={saveCallRecord} 
+              <Button
+                onClick={saveCallRecord}
                 disabled={!selectedDisposition}
                 className="bg-gradient-primary"
               >

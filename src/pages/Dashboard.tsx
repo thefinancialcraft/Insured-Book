@@ -80,6 +80,76 @@ const Dashboard = () => {
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
+      {/* Welcome Hero Section */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-purple-600 via-purple-700 to-purple-800 rounded-3xl p-4 md:p-8 text-white shadow-2xl pt-1 md:pt-8">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full -translate-y-16 translate-x-16"></div>
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-white rounded-full translate-y-12 -translate-x-12"></div>
+        </div>
+
+        <div className="relative z-10">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+            <div className="mb-4 lg:mb-0 lg:flex-1">
+              <div className="hidden md:flex items-center space-x-3 mb-4">
+                <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-3">
+                  <TrendingUp className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <p className="text-purple-100 text-sm font-medium">Dashboard Overview</p>
+                  <p className="text-xs text-purple-200">Real-time insights</p>
+                </div>
+              </div>
+
+              <h1 className="text-lg md:text-3xl lg:text-4xl font-bold pt-4 md:mb-3 leading-tight text-center md:text-left">
+              👋 Welcome back! 
+                <br className="md:hidden" />
+                <span className="text-purple-200 block text-2xl md:text-4xl lg:text-5xl tracking-wide capitalize">{userData.userName}</span>
+              </h1>
+
+              <p className="text-purple-100 text-sm md:text-lg max-w-2xl leading-relaxed hidden md:block">
+                Your insurance business is thriving today. Here's what's happening with your customers and sales performance.
+              </p>
+            </div>
+
+            <div className="lg:ml-8">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl md:rounded-3xl p-4 md:p-6 border border-white/20">
+                <div className="flex items-center space-x-3 md:space-x-4">
+                  <div className="bg-white/20 rounded-xl md:rounded-2xl p-2 md:p-3">
+                    <Calendar className="h-5 w-5 md:h-6 md:w-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-purple-100 text-xs md:text-sm font-medium">Today's Date</p>
+                    <p className="font-bold text-base md:text-lg">
+                      {new Date().toLocaleDateString('en-US', {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric'
+                      })}
+                    </p>
+                    <p className="text-purple-200 text-xs md:text-sm">
+                      {new Date().getFullYear()}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-3 md:mt-4 pt-3 md:pt-4 border-t border-white/20">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-purple-100 text-xs md:text-sm">Today's Sales</p>
+                      <p className="font-bold text-lg md:text-xl">₹45,200</p>
+                    </div>
+                    <div className="bg-green-500/20 rounded-lg md:rounded-xl p-2">
+                      <TrendingUp className="h-4 w-4 text-green-300" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Quick Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-4 border border-white/50 shadow-sm">

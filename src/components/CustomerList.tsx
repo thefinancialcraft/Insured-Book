@@ -140,6 +140,9 @@ export const CustomerList = ({ filter }: CustomerListProps) => {
     }
   ]);
 
+  const [showMobileFilter, setShowMobileFilter] = useState(false);
+  const [customFilter, setCustomFilter] = useState<string | null>(null);
+
   // Event handlers
   const handleViewDetails = (customer: any) => {
     setSelectedCustomer(customer);
@@ -258,9 +261,9 @@ export const CustomerList = ({ filter }: CustomerListProps) => {
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row gap-4">
             {/* Enhanced Search Bar */}
-            <div className="flex-1 relative">
+            <div className="flex-1 relative flex items-center">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-muted-foreground" />
+                <Filter className="h-5 w-5 text-muted-foreground" />
               </div>
               <Input
                 placeholder="Search customers by name, contact, or RC number..."
@@ -268,6 +271,45 @@ export const CustomerList = ({ filter }: CustomerListProps) => {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 h-12 border-2 focus:border-primary transition-all duration-300 bg-background/50 backdrop-blur-sm"
               />
+              {/* Filter Icon Button (Mobile Only) */}
+              <div className="relative">
+                <button
+                  type="button"
+                  className="md:hidden ml-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                  onClick={() => setShowMobileFilter(true)}
+                  aria-label="Open filter options"
+                >
+                  <Filter className="h-5 w-5 text-blue-600" />
+                </button>
+                {/* Mobile Filter Popup/Modal (now absolute) */}
+                
+                {showMobileFilter && (
+                  <div className="absolute right-0 top-full mt-2 z-50 bg-white rounded-2xl p-6 w-64 shadow-xl border border-gray-100">
+                    <h3 className="text-lg font-bold mb-4 text-gray-900">Filter Customers</h3>
+                    <div className="space-y-2">
+                      {['All Customers', 'Expiring Soon', 'Critical', 'Birthday', 'Custom'].map((option) => (
+                        <button
+                          key={option}
+                          className="w-full text-left px-4 py-2 rounded-lg hover:bg-blue-50 text-gray-800 font-medium"
+                          onClick={() => {
+                            setShowMobileFilter(false);
+                            setCustomFilter(option.toLowerCase() === 'custom' ? 'custom' : null);
+                            setFilterBy(option.toLowerCase().replace(/ /g, ''));
+                          }}
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                    <button
+                      className="mt-4 w-full py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200"
+                      onClick={() => setShowMobileFilter(false)}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Desktop Filter Buttons */}
@@ -307,62 +349,66 @@ export const CustomerList = ({ filter }: CustomerListProps) => {
                 Birthdays
               </Button>
             </div>
-
-            {/* Modern Mobile Filter Dropdown */}
-            <div className="md:hidden">
-              <Select value={filterBy} onValueChange={setFilterBy}>
-                <SelectTrigger className="w-full h-12 border-2 focus:border-primary transition-colors bg-background/50 backdrop-blur-sm">
-                  <div className="flex items-center">
-                    <Filter className="h-4 w-4 mr-2" />
-                    <SelectValue placeholder="Filter customers" />
-                  </div>
-                  <ChevronDown className="h-4 w-4 opacity-50" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Customers</SelectItem>
-                  <SelectItem value="expiring">Expiring Soon</SelectItem>
-                  <SelectItem value="critical">Critical Status</SelectItem>
-                  <SelectItem value="birthday">Birthday This Month</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
+
+          {/* Custom Filter Chips (Mobile Only, below search input) */}
+          {customFilter === 'custom' && (
+            <div className="flex flex-wrap gap-2 mt-3 md:hidden">
+              {/* Example chips, implement logic as needed */}
+              {['Month', 'Year', 'Date', 'Expire', 'Upcoming', 'Critical', 'Active'].map((chip) => (
+                <button
+                  key={chip}
+                  className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium hover:bg-blue-200 transition"
+                  onClick={() => {/* set custom filter logic here */ }}
+                >
+                  {chip}
+                </button>
+              ))}
+            </div>
+          )}
+
+         
         </CardContent>
       </Card>
 
       {/* Customer Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {filteredCustomers.map((customer) => (
           <Card
             key={customer.id}
-            className="bg-gradient-card shadow-card border-0 hover:shadow-hover transition-all duration-300 animate-scale-in cursor-pointer"
+            className="bg-white/80 backdrop-blur-sm border border-white/50 hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden relative"
             onClick={() => handleViewDetails(customer)}
           >
-            <CardHeader className="pb-2 md:pb-3 p-3 md:p-6">
+            {/* Background Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-purple-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+            <CardHeader className="pb-3 p-4 md:p-6 relative z-10">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2 md:space-x-3 min-w-0 flex-1">
-                  <Avatar className="h-10 w-10 md:h-12 md:w-12 bg-gradient-primary flex-shrink-0">
-                    <AvatarFallback className="text-primary-foreground font-semibold text-sm">
+                <div className="flex items-center space-x-3 min-w-0 flex-1">
+                  <Avatar className="h-12 w-12 md:h-14 md:w-14 bg-gradient-to-r from-blue-500 to-purple-600 flex-shrink-0 shadow-lg">
+                    <AvatarFallback className="text-white font-bold text-sm md:text-base">
                       {getInitials(customer.name)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-semibold text-foreground text-sm md:text-base truncate">{customer.name}</h3>
-                    <p className="text-xs md:text-sm text-muted-foreground flex items-center truncate">
-                      <Phone className="h-3 w-3 mr-1 flex-shrink-0" />
+                    <h3 className="font-bold text-gray-900 text-base md:text-lg truncate">{customer.name}</h3>
+                    <p className="text-sm text-gray-600 flex items-center truncate">
+                      <Phone className="h-4 w-4 mr-2 flex-shrink-0" />
                       {customer.contact}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
                   {isDaysToBirthday(customer.birthday) && (
-                    <Gift
-                      className="h-4 w-4 text-warning cursor-pointer hover:text-warning/80"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleWhatsApp(customer, 'birthday');
-                      }}
-                    />
+                    <div className="bg-yellow-100 p-2 rounded-full">
+                      <Gift
+                        className="h-4 w-4 text-yellow-600 cursor-pointer hover:text-yellow-700"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleWhatsApp(customer, 'birthday');
+                        }}
+                      />
+                    </div>
                   )}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -370,6 +416,7 @@ export const CustomerList = ({ filter }: CustomerListProps) => {
                         variant="ghost"
                         size="sm"
                         onClick={(e) => e.stopPropagation()}
+                        className="hover:bg-gray-100"
                       >
                         <MoreVertical className="h-4 w-4" />
                       </Button>
@@ -394,7 +441,7 @@ export const CustomerList = ({ filter }: CustomerListProps) => {
                           e.stopPropagation();
                           handleDeleteCustomer(customer);
                         }}
-                        className="text-destructive focus:text-destructive"
+                        className="text-red-600 focus:text-red-600"
                       >
                         <Trash2 className="h-4 w-4 mr-2" />
                         Delete Customer
@@ -405,63 +452,68 @@ export const CustomerList = ({ filter }: CustomerListProps) => {
               </div>
             </CardHeader>
 
-            <CardContent className="space-y-2 md:space-y-4 p-3 md:p-6 pt-0">
+            <CardContent className="space-y-4 p-4 md:p-6 pt-0 relative z-10">
               {/* Vehicle Info */}
-              <div className="flex items-center space-x-1 md:space-x-2">
-                <Car className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
-                <span className="text-xs md:text-sm text-foreground truncate">{customer.brand} {customer.model}</span>
-                <Badge variant="secondary" className="text-xs flex-shrink-0">
-                  {customer.vehicleType}
-                </Badge>
-              </div>
-
-              {/* RC Number */}
-              <div className="flex items-center space-x-1 md:space-x-2">
-                <FileText className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
-                <span className="text-xs md:text-sm text-muted-foreground truncate">RC: {customer.rcNumber}</span>
+              <div className="bg-gray-50/50 rounded-xl p-3">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Car className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                  <span className="font-semibold text-gray-900 text-sm">{customer.brand} {customer.model}</span>
+                  <Badge variant="secondary" className="bg-blue-100 text-blue-700 text-xs">
+                    {customer.vehicleType}
+                  </Badge>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <FileText className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                  <span className="text-sm text-gray-600">RC: {customer.rcNumber}</span>
+                </div>
               </div>
 
               {/* Expiry Status */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-1 md:space-x-2 min-w-0 flex-1">
-                  <AlertCircle className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
-                  <span className="text-xs md:text-sm text-foreground truncate">Exp: {customer.expiryDate}</span>
+              <div className="bg-orange-50/50 rounded-xl p-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <AlertCircle className="h-4 w-4 text-orange-600 flex-shrink-0" />
+                    <span className="font-medium text-gray-900 text-sm">Expires: {customer.expiryDate}</span>
+                  </div>
+                  <Badge className={`${getStatusColor(customer.status)} text-xs font-bold px-3 py-1`}>
+                    {customer.daysToExpiry} days
+                  </Badge>
                 </div>
-                <Badge className={`${getStatusColor(customer.status)} border text-xs flex-shrink-0`}>
-                  {customer.daysToExpiry}d
-                </Badge>
               </div>
 
               {/* Birthday Info */}
-              <div className="flex items-center space-x-1 md:space-x-2">
-                <Gift className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
-                <span className="text-xs md:text-sm text-muted-foreground truncate">DOB: {customer.birthday}</span>
+              <div className="bg-purple-50/50 rounded-xl p-3">
+                <div className="flex items-center space-x-2">
+                  <Gift className="h-4 w-4 text-purple-600 flex-shrink-0" />
+                  <span className="text-sm text-gray-700">Birthday: {customer.birthday}</span>
+                </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex space-x-1 md:space-x-2 pt-1 md:pt-2">
+              <div className="flex space-x-2 pt-2">
                 <Button
                   size="sm"
                   variant="outline"
-                  className="flex-1 text-xs md:text-sm px-2 py-1 h-7 md:h-9"
+                  className="flex-1 bg-white hover:bg-gray-50 border-gray-200 text-gray-700 hover:text-gray-900"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleCall(customer.contact, customer);
                   }}
                 >
-                  <Phone className="h-3 w-3 mr-1" />
-                  <span className="hidden sm:inline">Call</span>
+                  <Phone className="h-4 w-4 mr-2" />
+                  Call
                 </Button>
                 <Button
                   size="sm"
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-xs md:text-sm px-2 py-1 h-7 md:h-9"
+                  variant="outline"
+                  className="flex-1 bg-white hover:bg-gray-50 border-gray-200 text-gray-700 hover:text-gray-900"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleWhatsApp(customer, 'general');
                   }}
                 >
-                  <MessageCircle className="h-3 w-3 mr-1" />
-                  <span className="hidden sm:inline">WhatsApp</span>
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  WhatsApp
                 </Button>
               </div>
             </CardContent>

@@ -32,9 +32,9 @@ const MobileNavigation = () => {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`flex flex-col items-center justify-center py-3 px-2 rounded-2xl transition-all duration-200 ${isActive(item.href)
-                  ? "bg-gradient-to-r from-purple-500 to-purple-700 text-white shadow-lg"
-                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                className={`flex flex-col items-center justify-center py-2 px-2 rounded-2xl transition-all duration-200 ${isActive(item.href)
+                  ? "text-purple-600"
+                  : "text-gray-500 hover:text-gray-700"
                   }`}
               >
                 <Icon className="h-5 w-5 mb-1" />

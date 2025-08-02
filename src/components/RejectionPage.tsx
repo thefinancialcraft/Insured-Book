@@ -296,19 +296,19 @@ const RejectionPage = () => {
                         <div className="space-y-3">
                             <div className="flex items-center gap-2">
                                 <User className="w-4 h-4 text-gray-500" />
-                                <span className="text-base font-medium">Name:</span>
-                                <span className="text-base text-gray-600">{profile.user_name}</span>
+                                <span className="text-sm font-medium">Name:</span>
+                                <span className="text-sm text-gray-600">{profile.user_name}</span>
                             </div>
 
                             <div className="flex items-center gap-2">
                                 <Mail className="w-4 h-4 text-gray-500" />
-                                <span className="text-base font-medium">Email:</span>
-                                <span className="text-base text-gray-600">{profile.email}</span>
+                                <span className="text-sm font-medium">Email:</span>
+                                <span className="text-sm text-gray-600">{profile.email}</span>
                             </div>
 
                             <div className="flex items-center gap-2">
                                 <Briefcase className="w-4 h-4 text-gray-500" />
-                                <span className="text-base font-medium">Role:</span>
+                                <span className="text-sm font-medium">Role:</span>
                                 <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(profile.role)}`}>
                                     {getRoleLabel(profile.role)}
                                 </span>
@@ -316,27 +316,27 @@ const RejectionPage = () => {
 
                             <div className="flex items-center gap-2">
                                 <Phone className="w-4 h-4 text-gray-500" />
-                                <span className="text-base font-medium">Phone:</span>
-                                <span className="text-base text-gray-600">{profile.contact_no}</span>
+                                <span className="text-sm font-medium">Phone:</span>
+                                <span className="text-sm text-gray-600">{profile.contact_no}</span>
                             </div>
                         </div>
 
                         <div className="space-y-3">
                             <div className="flex items-center gap-2">
                                 <MapPin className="w-4 h-4 text-gray-500" />
-                                <span className="text-base font-medium">Location:</span>
-                                <span className="text-base text-gray-600">{profile.city}, {profile.state}</span>
+                                <span className="text-sm font-medium">Location:</span>
+                                <span className="text-sm text-gray-600">{profile.city}, {profile.state}</span>
                             </div>
 
                             <div className="flex items-center gap-2">
                                 <Calendar className="w-4 h-4 text-gray-500" />
-                                <span className="text-base font-medium">DOB:</span>
-                                <span className="text-base text-gray-600">{new Date(profile.dob).toLocaleDateString()}</span>
+                                <span className="text-sm font-medium">DOB:</span>
+                                <span className="text-sm text-gray-600">{new Date(profile.dob).toLocaleDateString()}</span>
                             </div>
 
                             <div className="flex items-center gap-2">
-                                <span className="text-base font-medium">Pincode:</span>
-                                <span className="text-base text-gray-600">{profile.pincode}</span>
+                                <span className="text-sm font-medium">Pincode:</span>
+                                <span className="text-sm text-gray-600">{profile.pincode}</span>
                             </div>
                         </div>
                     </div>
@@ -350,7 +350,7 @@ const RejectionPage = () => {
                         Back to Login
                     </button>
 
-                    <p className="text-gray-500 text-base">
+                    <p className="text-gray-500 text-sm">
                         If you believe this rejection was made in error, please contact our support team.
                     </p>
                 </div>

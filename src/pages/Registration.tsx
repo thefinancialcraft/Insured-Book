@@ -92,7 +92,7 @@ const Registration = () => {
               <h1 className="text-xl md:text-2xl font-bold text-gray-900">
                 {isEdit ? "Edit Customer" : "Customer Registration"}
               </h1>
-              <p className="text-base md:text-sm text-gray-600">
+              <p className="text-xs md:text-sm text-gray-600">
                 {isEdit ? "Update customer and policy details" : "Add new customer and policy details"}
               </p>
             </div>

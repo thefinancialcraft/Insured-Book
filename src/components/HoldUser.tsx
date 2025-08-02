@@ -356,35 +356,35 @@ const HoldUser = () => {
                         <div className="flex items-center space-x-3">
                             <User className="w-5 h-5 text-gray-400" />
                             <div>
-                                <p className="text-base text-gray-500">Name</p>
+                                <p className="text-sm text-gray-500">Name</p>
                                 <p className="font-medium">{profile.user_name}</p>
                             </div>
                         </div>
                         <div className="flex items-center space-x-3">
                             <Mail className="w-5 h-5 text-gray-400" />
                             <div>
-                                <p className="text-base text-gray-500">Email</p>
+                                <p className="text-sm text-gray-500">Email</p>
                                 <p className="font-medium">{profile.email}</p>
                             </div>
                         </div>
                         <div className="flex items-center space-x-3">
                             <Phone className="w-5 h-5 text-gray-400" />
                             <div>
-                                <p className="text-base text-gray-500">Contact</p>
+                                <p className="text-sm text-gray-500">Contact</p>
                                 <p className="font-medium">{profile.contact_no}</p>
                             </div>
                         </div>
                         <div className="flex items-center space-x-3">
                             <MapPin className="w-5 h-5 text-gray-400" />
                             <div>
-                                <p className="text-base text-gray-500">Location</p>
+                                <p className="text-sm text-gray-500">Location</p>
                                 <p className="font-medium">{profile.city}, {profile.state}</p>
                             </div>
                         </div>
                         <div className="flex items-center space-x-3">
                             <Briefcase className="w-5 h-5 text-gray-400" />
                             <div>
-                                <p className="text-base text-gray-500">Role</p>
+                                <p className="text-sm text-gray-500">Role</p>
                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(profile.role)}`}>
                                     {getRoleLabel(profile.role)}
                                 </span>
@@ -394,7 +394,7 @@ const HoldUser = () => {
                             <div className="flex items-center space-x-3">
                                 <Calendar className="w-5 h-5 text-gray-400" />
                                 <div>
-                                    <p className="text-base text-gray-500">Employee ID</p>
+                                    <p className="text-sm text-gray-500">Employee ID</p>
                                     <p className="font-medium">{profile.employee_id}</p>
                                 </div>
                             </div>
@@ -414,7 +414,7 @@ const HoldUser = () => {
                 {profile.hold_start_date && (
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
                         <h3 className="text-lg font-semibold text-blue-800 mb-2">Hold Period Details</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-base">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                             <div>
                                 <p className="text-blue-600">Start Date:</p>
                                 <p className="font-medium">{new Date(profile.hold_start_date).toLocaleString()}</p>

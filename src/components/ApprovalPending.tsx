@@ -272,7 +272,7 @@ const ApprovalPending = () => {
                         {getApprovalIcon()}
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-800 mb-2">{getApprovalText()}</h2>
-                    <p className="text-gray-600 text-center max-w-md text-base">{getApprovalDescription()}</p>
+                    <p className="text-gray-600 text-center max-w-md">{getApprovalDescription()}</p>
                 </div>
 
                 {error && (
@@ -333,19 +333,19 @@ const ApprovalPending = () => {
                         <div className="space-y-3">
                             <div className="flex items-center gap-2">
                                 <User className="w-4 h-4 text-gray-500" />
-                                <span className="text-base font-medium">Name:</span>
-                                <span className="text-base text-gray-600">{profile.user_name}</span>
+                                <span className="text-sm font-medium">Name:</span>
+                                <span className="text-sm text-gray-600">{profile.user_name}</span>
                             </div>
 
                             <div className="flex items-center gap-2">
                                 <Mail className="w-4 h-4 text-gray-500" />
-                                <span className="text-base font-medium">Email:</span>
-                                <span className="text-base text-gray-600">{profile.email}</span>
+                                <span className="text-sm font-medium">Email:</span>
+                                <span className="text-sm text-gray-600">{profile.email}</span>
                             </div>
 
                             <div className="flex items-center gap-2">
                                 <Briefcase className="w-4 h-4 text-gray-500" />
-                                <span className="text-base font-medium">Role:</span>
+                                <span className="text-sm font-medium">Role:</span>
                                 <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(profile.role)}`}>
                                     {getRoleLabel(profile.role)}
                                 </span>
@@ -353,27 +353,27 @@ const ApprovalPending = () => {
 
                             <div className="flex items-center gap-2">
                                 <Phone className="w-4 h-4 text-gray-500" />
-                                <span className="text-base font-medium">Phone:</span>
-                                <span className="text-base text-gray-600">{profile.contact_no}</span>
+                                <span className="text-sm font-medium">Phone:</span>
+                                <span className="text-sm text-gray-600">{profile.contact_no}</span>
                             </div>
                         </div>
 
                         <div className="space-y-3">
                             <div className="flex items-center gap-2">
                                 <MapPin className="w-4 h-4 text-gray-500" />
-                                <span className="text-base font-medium">Location:</span>
-                                <span className="text-base text-gray-600">{profile.city}, {profile.state}</span>
+                                <span className="text-sm font-medium">Location:</span>
+                                <span className="text-sm text-gray-600">{profile.city}, {profile.state}</span>
                             </div>
 
                             <div className="flex items-center gap-2">
                                 <Calendar className="w-4 h-4 text-gray-500" />
-                                <span className="text-base font-medium">DOB:</span>
-                                <span className="text-base text-gray-600">{new Date(profile.dob).toLocaleDateString()}</span>
+                                <span className="text-sm font-medium">DOB:</span>
+                                <span className="text-sm text-gray-600">{new Date(profile.dob).toLocaleDateString()}</span>
                             </div>
 
                             <div className="flex items-center gap-2">
-                                <span className="text-base font-medium">Pincode:</span>
-                                <span className="text-base text-gray-600">{profile.pincode}</span>
+                                <span className="text-sm font-medium">Pincode:</span>
+                                <span className="text-sm text-gray-600">{profile.pincode}</span>
                             </div>
                         </div>
                     </div>

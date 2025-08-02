@@ -38,7 +38,7 @@ const MobileNavigation = () => {
                   }`}
               >
                 <Icon className="h-5 w-5 mb-1" />
-                <span className="text-base font-medium">{item.name}</span>
+                <span className="text-xs font-medium">{item.name}</span>
               </Link>
             );
           })}

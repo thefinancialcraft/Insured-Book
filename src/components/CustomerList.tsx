@@ -347,8 +347,8 @@ export const CustomerList = ({ filter }: CustomerListProps) => {
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-semibold text-foreground text-base md:text-base truncate">{customer.name}</h3>
-                    <p className="text-base md:text-sm text-muted-foreground flex items-center truncate">
+                    <h3 className="font-semibold text-foreground text-sm md:text-base truncate">{customer.name}</h3>
+                    <p className="text-xs md:text-sm text-muted-foreground flex items-center truncate">
                       <Phone className="h-3 w-3 mr-1 flex-shrink-0" />
                       {customer.contact}
                     </p>
@@ -409,7 +409,7 @@ export const CustomerList = ({ filter }: CustomerListProps) => {
               {/* Vehicle Info */}
               <div className="flex items-center space-x-1 md:space-x-2">
                 <Car className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
-                <span className="text-base md:text-sm text-foreground truncate">{customer.brand} {customer.model}</span>
+                <span className="text-xs md:text-sm text-foreground truncate">{customer.brand} {customer.model}</span>
                 <Badge variant="secondary" className="text-xs flex-shrink-0">
                   {customer.vehicleType}
                 </Badge>
@@ -418,14 +418,14 @@ export const CustomerList = ({ filter }: CustomerListProps) => {
               {/* RC Number */}
               <div className="flex items-center space-x-1 md:space-x-2">
                 <FileText className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
-                <span className="text-base md:text-sm text-muted-foreground truncate">RC: {customer.rcNumber}</span>
+                <span className="text-xs md:text-sm text-muted-foreground truncate">RC: {customer.rcNumber}</span>
               </div>
 
               {/* Expiry Status */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-1 md:space-x-2 min-w-0 flex-1">
                   <AlertCircle className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
-                  <span className="text-base md:text-sm text-foreground truncate">Exp: {customer.expiryDate}</span>
+                  <span className="text-xs md:text-sm text-foreground truncate">Exp: {customer.expiryDate}</span>
                 </div>
                 <Badge className={`${getStatusColor(customer.status)} border text-xs flex-shrink-0`}>
                   {customer.daysToExpiry}d
@@ -435,7 +435,7 @@ export const CustomerList = ({ filter }: CustomerListProps) => {
               {/* Birthday Info */}
               <div className="flex items-center space-x-1 md:space-x-2">
                 <Gift className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
-                <span className="text-base md:text-sm text-muted-foreground truncate">DOB: {customer.birthday}</span>
+                <span className="text-xs md:text-sm text-muted-foreground truncate">DOB: {customer.birthday}</span>
               </div>
 
               {/* Action Buttons */}
@@ -443,7 +443,7 @@ export const CustomerList = ({ filter }: CustomerListProps) => {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="flex-1 text-base md:text-sm px-2 py-1 h-7 md:h-9"
+                  className="flex-1 text-xs md:text-sm px-2 py-1 h-7 md:h-9"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleCall(customer.contact, customer);
@@ -454,7 +454,7 @@ export const CustomerList = ({ filter }: CustomerListProps) => {
                 </Button>
                 <Button
                   size="sm"
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-base md:text-sm px-2 py-1 h-7 md:h-9"
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-xs md:text-sm px-2 py-1 h-7 md:h-9"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleWhatsApp(customer, 'general');

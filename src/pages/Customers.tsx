@@ -10,7 +10,7 @@ const Customers = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-0">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Customers</h1>
-          <p className="text-base md:text-base text-gray-600">Manage all customer records</p>
+          <p className="text-sm md:text-base text-gray-600">Manage all customer records</p>
         </div>
       </div>
       <div className="bg-white/80 backdrop-blur-sm rounded-3xl border border-white/50 shadow-lg p-3 md:p-6">

@@ -14,7 +14,11 @@ import {
     Briefcase,
     Crown,
     LogOut,
-    Settings
+    Settings,
+    History,
+    AlertTriangle,
+    Play,
+    Pause
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -57,6 +61,23 @@ interface UserProfile {
     created_at: string;
 }
 
+interface UserActivityLog {
+    id: string;
+    user_id: string;
+    admin_user_id?: string;
+    action_type: string;
+    previous_status?: string;
+    new_status?: string;
+    previous_role?: string;
+    new_role?: string;
+    reason?: string;
+    hold_days?: number;
+    hold_start_date?: string;
+    hold_end_date?: string;
+    admin_comment?: string;
+    created_at: string;
+}
+
 const AdminPanel = () => {
     const { user, signOut } = useAuth();
     const navigate = useNavigate();
@@ -80,10 +101,38 @@ const AdminPanel = () => {
     const [customHoldDate, setCustomHoldDate] = useState<Date | undefined>(undefined);
     const [customHoldTime, setCustomHoldTime] = useState("");
 
+    // Logs state
+    const [showLogsModal, setShowLogsModal] = useState(false);
+    const [selectedUserLogs, setSelectedUserLogs] = useState<UserActivityLog[]>([]);
+    const [logsLoading, setLogsLoading] = useState(false);
+
     useEffect(() => {
         fetchUsers();
         fetchCurrentAdmin();
+
+        // Test database connection and schema
+        testDatabaseConnection();
     }, []);
+
+    const testDatabaseConnection = async () => {
+        try {
+            console.log("Testing database connection...");
+
+            // Test basic query
+            const { data, error } = await supabase
+                .from('user_profiles')
+                .select('user_id, user_name, email, role, status, approval_status')
+                .limit(1);
+
+            if (error) {
+                console.error("Database connection test failed:", error);
+            } else {
+                console.log("Database connection successful, sample data:", data);
+            }
+        } catch (error) {
+            console.error("Database test error:", error);
+        }
+    };
 
     const fetchCurrentAdmin = async () => {
         if (!user) return;
@@ -122,6 +171,27 @@ const AdminPanel = () => {
         }
     };
 
+    const fetchUserLogs = async (userId: string) => {
+        setLogsLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('user_activity_logs')
+                .select('*')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error("Error fetching logs:", error);
+            } else {
+                setSelectedUserLogs(data || []);
+            }
+        } catch (error) {
+            console.error("Error fetching logs:", error);
+        } finally {
+            setLogsLoading(false);
+        }
+    };
+
     const handleLogout = async () => {
         try {
             await signOut();
@@ -133,6 +203,13 @@ const AdminPanel = () => {
 
     const approveUser = async (userId: string) => {
         try {
+            console.log("Approving user:", userId);
+
+            // Set current admin ID for logging
+            if (user) {
+                await supabase.rpc('set_current_admin', { admin_id: user.id });
+            }
+
             const { error } = await supabase
                 .from('user_profiles')
                 .update({
@@ -144,18 +221,27 @@ const AdminPanel = () => {
                 .eq('user_id', userId);
 
             if (error) {
-                setError("Failed to approve user.");
+                console.error("Supabase error:", error);
+                setError(`Failed to approve user: ${error.message}`);
             } else {
+                console.log("User approved successfully");
+                // Note: Activity logging is handled automatically by database trigger
                 setError("");
                 fetchUsers(); // Refresh the list
             }
         } catch (error) {
-            setError("An error occurred while approving user.");
+            console.error("Error in approveUser:", error);
+            setError(`An error occurred while approving user: ${error.message}`);
         }
     };
 
     const rejectUser = async (userId: string) => {
         try {
+            // Set current admin ID for logging
+            if (user) {
+                await supabase.rpc('set_current_admin', { admin_id: user.id });
+            }
+
             const { error } = await supabase
                 .from('user_profiles')
                 .update({
@@ -167,6 +253,8 @@ const AdminPanel = () => {
             if (error) {
                 setError("Failed to reject user.");
             } else {
+                console.log("User rejected successfully");
+                // Note: Activity logging is handled automatically by database trigger
                 setError("");
                 setReason("");
                 setShowReasonModal(false);
@@ -181,6 +269,11 @@ const AdminPanel = () => {
 
     const holdUser = async (userId: string, days?: number, customEndDate?: string) => {
         try {
+            // Set current admin ID for logging
+            if (user) {
+                await supabase.rpc('set_current_admin', { admin_id: user.id });
+            }
+
             let holdEndDate: string;
             let holdDays: number;
 
@@ -212,6 +305,8 @@ const AdminPanel = () => {
             if (error) {
                 setError("Failed to put user on hold.");
             } else {
+                console.log("User put on hold successfully");
+                // Note: Activity logging is handled automatically by database trigger
                 setError("");
                 setReason("");
                 setShowReasonModal(false);
@@ -229,10 +324,19 @@ const AdminPanel = () => {
 
     const suspendUser = async (userId: string) => {
         try {
+            // Set current admin ID for logging
+            if (user) {
+                await supabase.rpc('set_current_admin', { admin_id: user.id });
+            }
+
             const { error } = await supabase
                 .from('user_profiles')
                 .update({
                     status: 'suspend',
+                    // Reset hold-related fields when suspending
+                    hold_days: null,
+                    hold_start_date: null,
+                    hold_end_date: null,
                     status_reason: reason
                 })
                 .eq('user_id', userId);
@@ -240,6 +344,8 @@ const AdminPanel = () => {
             if (error) {
                 setError("Failed to suspend user.");
             } else {
+                console.log("User suspended successfully");
+                // Note: Activity logging is handled automatically by database trigger
                 setError("");
                 setReason("");
                 setShowReasonModal(false);
@@ -254,10 +360,16 @@ const AdminPanel = () => {
 
     const activateUser = async (userId: string) => {
         try {
+            // Set current admin ID for logging
+            if (user) {
+                await supabase.rpc('set_current_admin', { admin_id: user.id });
+            }
+
             const { error } = await supabase
                 .from('user_profiles')
                 .update({
                     status: 'active',
+                    // Reset all hold-related fields when activating
                     hold_days: null,
                     hold_start_date: null,
                     hold_end_date: null,
@@ -268,6 +380,8 @@ const AdminPanel = () => {
             if (error) {
                 setError("Failed to activate user.");
             } else {
+                console.log("User activated successfully");
+                // Note: Activity logging is handled automatically by database trigger
                 setError("");
                 fetchUsers(); // Refresh the list
             }
@@ -278,6 +392,11 @@ const AdminPanel = () => {
 
     const updateUserRole = async (userId: string, newRole: string) => {
         try {
+            // Set current admin ID for logging
+            if (user) {
+                await supabase.rpc('set_current_admin', { admin_id: user.id });
+            }
+
             const { error } = await supabase
                 .from('user_profiles')
                 .update({
@@ -288,6 +407,8 @@ const AdminPanel = () => {
             if (error) {
                 setError("Failed to update user role.");
             } else {
+                console.log("User role updated successfully");
+                // Note: Activity logging is handled automatically by database trigger
                 setError("");
                 fetchUsers(); // Refresh the list
                 setShowRoleModal(false);
@@ -419,6 +540,66 @@ const AdminPanel = () => {
             case 'suspend':
                 suspendUser(targetUserId);
                 break;
+        }
+    };
+
+    const handleViewLogs = async (user: UserProfile) => {
+        setSelectedUser(user);
+        await fetchUserLogs(user.user_id);
+        setShowLogsModal(true);
+    };
+
+    const getActionLabel = (actionType: string) => {
+        switch (actionType) {
+            case 'approval_requested':
+                return 'Approval Requested';
+            case 'approval_accepted':
+                return 'Approval Accepted';
+            case 'approval_rejected':
+                return 'Approval Rejected';
+            case 'activated':
+                return 'Account Activated';
+            case 'hold_applied':
+                return 'Hold Applied';
+            case 'hold_removed':
+                return 'Hold Removed';
+            case 'suspended':
+                return 'Account Suspended';
+            case 'unsuspended':
+                return 'Account Unsuspended';
+            case 'role_changed':
+                return 'Role Changed';
+            case 'profile_updated':
+                return 'Profile Updated';
+            default:
+                return actionType;
+        }
+    };
+
+    const getActionIcon = (actionType: string) => {
+        switch (actionType) {
+            case 'approval_requested':
+                return <Clock className="w-4 h-4 text-yellow-500" />;
+            case 'approval_accepted':
+                return <CheckCircle className="w-4 h-4 text-green-500" />;
+            case 'approval_rejected':
+                return <XCircle className="w-4 h-4 text-red-500" />;
+            case 'activated':
+                return <Play className="w-4 h-4 text-green-500" />;
+            case 'hold_applied':
+                return <Pause className="w-4 h-4 text-orange-500" />;
+            case 'hold_removed':
+                return <Play className="w-4 h-4 text-green-500" />;
+            case 'suspended':
+                return <AlertTriangle className="w-4 h-4 text-red-500" />;
+            case 'unsuspended':
+                return <Play className="w-4 h-4 text-green-500" />;
+            case 'role_changed':
+                return <Briefcase className="w-4 h-4 text-blue-500" />;
+            case 'profile_updated':
+                return <User className="w-4 h-4 text-gray-500" />;
+            default:
+                return <User className="w-4 h-4 text-gray-500" />;
         }
     };
 
@@ -603,6 +784,14 @@ const AdminPanel = () => {
                                                 >
                                                     <Eye className="w-4 h-4 mr-1" />
                                                     View
+                                                </button>
+
+                                                <button
+                                                    onClick={() => handleViewLogs(user)}
+                                                    className="text-purple-600 hover:text-purple-900 flex items-center"
+                                                >
+                                                    <History className="w-4 h-4 mr-1" />
+                                                    Logs
                                                 </button>
 
                                                 {/* Only show status management for specific statuses */}
@@ -899,6 +1088,128 @@ const AdminPanel = () => {
                                         Confirm {actionType === 'hold' ? 'Hold' : actionType === 'suspend' ? 'Suspend' : 'Reject'}
                                     </Button>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* User Activity Logs Modal */}
+                {showLogsModal && selectedUser && (
+                    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+                        <div className="relative top-20 mx-auto p-5 border w-[800px] shadow-lg rounded-md bg-white">
+                            <div className="mt-3">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3 className="text-lg font-medium text-gray-900">
+                                        Activity Logs - {selectedUser.user_name}
+                                    </h3>
+                                    <button
+                                        onClick={() => {
+                                            setShowLogsModal(false);
+                                            setSelectedUser(null);
+                                            setSelectedUserLogs([]);
+                                        }}
+                                        className="text-gray-400 hover:text-gray-600"
+                                    >
+                                        <XCircle className="w-6 h-6" />
+                                    </button>
+                                </div>
+
+                                {logsLoading ? (
+                                    <div className="flex justify-center py-8">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                                    </div>
+                                ) : selectedUserLogs.length === 0 ? (
+                                    <div className="text-center py-8">
+                                        <History className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                                        <p className="text-gray-500">No activity logs found for this user.</p>
+                                    </div>
+                                ) : (
+                                    <div className="max-h-96 overflow-y-auto">
+                                        <div className="space-y-4">
+                                            {selectedUserLogs.map((log) => (
+                                                <div key={log.id} className="border border-gray-200 rounded-lg p-4">
+                                                    <div className="flex items-start justify-between">
+                                                        <div className="flex items-center space-x-3">
+                                                            {getActionIcon(log.action_type)}
+                                                            <div>
+                                                                <h4 className="font-medium text-gray-900">
+                                                                    {getActionLabel(log.action_type)}
+                                                                </h4>
+                                                                <p className="text-sm text-gray-500">
+                                                                    {new Date(log.created_at).toLocaleString()}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="mt-3 space-y-2">
+                                                        {log.previous_status && log.new_status && (
+                                                            <div className="flex items-center space-x-2 text-sm">
+                                                                <span className="text-gray-500">Status:</span>
+                                                                <span className={`px-2 py-1 rounded text-xs ${getStatusColor(log.previous_status)}`}>
+                                                                    {log.previous_status}
+                                                                </span>
+                                                                <span className="text-gray-400">→</span>
+                                                                <span className={`px-2 py-1 rounded text-xs ${getStatusColor(log.new_status)}`}>
+                                                                    {log.new_status}
+                                                                </span>
+                                                            </div>
+                                                        )}
+
+                                                        {log.previous_role && log.new_role && (
+                                                            <div className="flex items-center space-x-2 text-sm">
+                                                                <span className="text-gray-500">Role:</span>
+                                                                <span className={`px-2 py-1 rounded text-xs ${getRoleColor(log.previous_role)}`}>
+                                                                    {log.previous_role}
+                                                                </span>
+                                                                <span className="text-gray-400">→</span>
+                                                                <span className={`px-2 py-1 rounded text-xs ${getRoleColor(log.new_role)}`}>
+                                                                    {log.new_role}
+                                                                </span>
+                                                            </div>
+                                                        )}
+
+                                                        {log.reason && (
+                                                            <div className="text-sm">
+                                                                <span className="text-gray-500">Reason:</span>
+                                                                <p className="text-gray-700 mt-1 bg-gray-50 p-2 rounded">
+                                                                    {log.reason}
+                                                                </p>
+                                                            </div>
+                                                        )}
+
+                                                        {log.hold_days && (
+                                                            <div className="text-sm">
+                                                                <span className="text-gray-500">Hold Duration:</span>
+                                                                <span className="text-gray-700 ml-2">{log.hold_days} day(s)</span>
+                                                            </div>
+                                                        )}
+
+                                                        {log.hold_start_date && log.hold_end_date && (
+                                                            <div className="text-sm space-y-1">
+                                                                <div>
+                                                                    <span className="text-gray-500">Hold Period:</span>
+                                                                    <span className="text-gray-700 ml-2">
+                                                                        {new Date(log.hold_start_date).toLocaleString()} - {new Date(log.hold_end_date).toLocaleString()}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {log.admin_comment && (
+                                                            <div className="text-sm">
+                                                                <span className="text-gray-500">Admin Comment:</span>
+                                                                <p className="text-gray-700 mt-1 bg-blue-50 p-2 rounded">
+                                                                    {log.admin_comment}
+                                                                </p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

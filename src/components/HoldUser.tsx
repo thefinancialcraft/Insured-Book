@@ -195,6 +195,10 @@ const HoldUser = () => {
                         } else if (payload.new.status === 'suspend') {
                             console.log("Status changed to suspend, redirecting to suspended page");
                             navigate("/suspended", { replace: true });
+                        } else if (payload.new.status === 'hold' && payload.old.status === 'hold') {
+                            // Hold status updated (e.g., hold extended or reason changed)
+                            console.log("Hold status updated, refreshing page");
+                            window.location.reload();
                         }
                     }
                 )

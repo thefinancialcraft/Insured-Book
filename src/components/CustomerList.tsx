@@ -5,12 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
-import { 
-  Search, 
-  Filter, 
+import {
+  Search,
+  Filter,
   Phone,
-  MessageCircle, 
-  Edit, 
+  MessageCircle,
+  Edit,
   Calendar,
   Car,
   AlertCircle,
@@ -180,7 +180,7 @@ export const CustomerList = ({ filter }: CustomerListProps) => {
   };
 
   const updateCustomer = (updatedCustomer: any) => {
-    setCustomers(customers.map(c => 
+    setCustomers(customers.map(c =>
       c.id === updatedCustomer.id ? updatedCustomer : c
     ));
     toast({
@@ -207,25 +207,25 @@ export const CustomerList = ({ filter }: CustomerListProps) => {
     const birthDate = new Date(birthday);
     const currentYear = today.getFullYear();
     const nextBirthday = new Date(currentYear, birthDate.getMonth(), birthDate.getDate());
-    
+
     if (nextBirthday < today) {
       nextBirthday.setFullYear(currentYear + 1);
     }
-    
+
     const diffTime = nextBirthday.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     return diffDays <= 7;
   };
 
   const filteredCustomers = customers.filter(customer => {
     const matchesSearch = customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         customer.contact.includes(searchTerm) ||
-                         customer.rcNumber.toLowerCase().includes(searchTerm.toLowerCase());
-    
+      customer.contact.includes(searchTerm) ||
+      customer.rcNumber.toLowerCase().includes(searchTerm.toLowerCase());
+
     let matchesFilter = true;
     if (filter) {
-      switch(filter) {
+      switch (filter) {
         case 'expiring':
           matchesFilter = customer.daysToExpiry <= 30;
           break;
@@ -247,7 +247,7 @@ export const CustomerList = ({ filter }: CustomerListProps) => {
       else if (filterBy === "critical") matchesFilter = customer.status === "critical";
       else if (filterBy === "birthday") matchesFilter = isDaysToBirthday(customer.birthday);
     }
-    
+
     return matchesSearch && matchesFilter;
   });
 
@@ -269,7 +269,7 @@ export const CustomerList = ({ filter }: CustomerListProps) => {
                 className="pl-10 h-12 border-2 focus:border-primary transition-all duration-300 bg-background/50 backdrop-blur-sm"
               />
             </div>
-            
+
             {/* Desktop Filter Buttons */}
             <div className="hidden md:flex gap-2">
               <Button
@@ -333,8 +333,8 @@ export const CustomerList = ({ filter }: CustomerListProps) => {
       {/* Customer Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
         {filteredCustomers.map((customer) => (
-          <Card 
-            key={customer.id} 
+          <Card
+            key={customer.id}
             className="bg-gradient-card shadow-card border-0 hover:shadow-hover transition-all duration-300 animate-scale-in cursor-pointer"
             onClick={() => handleViewDetails(customer)}
           >
@@ -347,8 +347,8 @@ export const CustomerList = ({ filter }: CustomerListProps) => {
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-semibold text-foreground text-sm md:text-base truncate">{customer.name}</h3>
-                    <p className="text-xs md:text-sm text-muted-foreground flex items-center truncate">
+                    <h3 className="font-semibold text-foreground text-base md:text-base truncate">{customer.name}</h3>
+                    <p className="text-base md:text-sm text-muted-foreground flex items-center truncate">
                       <Phone className="h-3 w-3 mr-1 flex-shrink-0" />
                       {customer.contact}
                     </p>
@@ -356,8 +356,8 @@ export const CustomerList = ({ filter }: CustomerListProps) => {
                 </div>
                 <div className="flex items-center space-x-2">
                   {isDaysToBirthday(customer.birthday) && (
-                    <Gift 
-                      className="h-4 w-4 text-warning cursor-pointer hover:text-warning/80" 
+                    <Gift
+                      className="h-4 w-4 text-warning cursor-pointer hover:text-warning/80"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleWhatsApp(customer, 'birthday');
@@ -366,84 +366,84 @@ export const CustomerList = ({ filter }: CustomerListProps) => {
                   )}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="sm"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                     <DropdownMenuContent>
-                       <DropdownMenuItem onClick={(e) => {
-                         e.stopPropagation();
-                         handleViewDetails(customer);
-                       }}>
-                         <Eye className="h-4 w-4 mr-2" />
-                         View Details
-                       </DropdownMenuItem>
-                       <DropdownMenuItem onClick={(e) => {
-                         e.stopPropagation();
-                         handleEditCustomer(customer);
-                       }}>
-                         <Edit className="h-4 w-4 mr-2" />
-                         Edit Details
-                       </DropdownMenuItem>
-                       <DropdownMenuItem 
-                         onClick={(e) => {
-                           e.stopPropagation();
-                           handleDeleteCustomer(customer);
-                         }}
-                         className="text-destructive focus:text-destructive"
-                       >
-                         <Trash2 className="h-4 w-4 mr-2" />
-                         Delete Customer
-                       </DropdownMenuItem>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={(e) => {
+                        e.stopPropagation();
+                        handleViewDetails(customer);
+                      }}>
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Details
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditCustomer(customer);
+                      }}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit Details
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteCustomer(customer);
+                        }}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete Customer
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
               </div>
             </CardHeader>
-            
+
             <CardContent className="space-y-2 md:space-y-4 p-3 md:p-6 pt-0">
               {/* Vehicle Info */}
               <div className="flex items-center space-x-1 md:space-x-2">
                 <Car className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
-                <span className="text-xs md:text-sm text-foreground truncate">{customer.brand} {customer.model}</span>
+                <span className="text-base md:text-sm text-foreground truncate">{customer.brand} {customer.model}</span>
                 <Badge variant="secondary" className="text-xs flex-shrink-0">
                   {customer.vehicleType}
                 </Badge>
               </div>
-              
+
               {/* RC Number */}
               <div className="flex items-center space-x-1 md:space-x-2">
                 <FileText className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
-                <span className="text-xs md:text-sm text-muted-foreground truncate">RC: {customer.rcNumber}</span>
+                <span className="text-base md:text-sm text-muted-foreground truncate">RC: {customer.rcNumber}</span>
               </div>
-              
+
               {/* Expiry Status */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-1 md:space-x-2 min-w-0 flex-1">
                   <AlertCircle className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
-                  <span className="text-xs md:text-sm text-foreground truncate">Exp: {customer.expiryDate}</span>
+                  <span className="text-base md:text-sm text-foreground truncate">Exp: {customer.expiryDate}</span>
                 </div>
                 <Badge className={`${getStatusColor(customer.status)} border text-xs flex-shrink-0`}>
                   {customer.daysToExpiry}d
                 </Badge>
               </div>
-              
+
               {/* Birthday Info */}
               <div className="flex items-center space-x-1 md:space-x-2">
                 <Gift className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
-                <span className="text-xs md:text-sm text-muted-foreground truncate">DOB: {customer.birthday}</span>
+                <span className="text-base md:text-sm text-muted-foreground truncate">DOB: {customer.birthday}</span>
               </div>
-              
+
               {/* Action Buttons */}
               <div className="flex space-x-1 md:space-x-2 pt-1 md:pt-2">
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="flex-1 text-xs md:text-sm px-2 py-1 h-7 md:h-9"
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="flex-1 text-base md:text-sm px-2 py-1 h-7 md:h-9"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleCall(customer.contact, customer);
@@ -452,9 +452,9 @@ export const CustomerList = ({ filter }: CustomerListProps) => {
                   <Phone className="h-3 w-3 mr-1" />
                   <span className="hidden sm:inline">Call</span>
                 </Button>
-                <Button 
-                  size="sm" 
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-xs md:text-sm px-2 py-1 h-7 md:h-9"
+                <Button
+                  size="sm"
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-base md:text-sm px-2 py-1 h-7 md:h-9"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleWhatsApp(customer, 'general');
@@ -527,8 +527,8 @@ export const CustomerList = ({ filter }: CustomerListProps) => {
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold">Edit Customer Details</h2>
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="sm"
                   onClick={() => {
                     setShowEdit(false);
@@ -538,11 +538,11 @@ export const CustomerList = ({ filter }: CustomerListProps) => {
                   ✕
                 </Button>
               </div>
-              <CustomerRegistration 
+              <CustomerRegistration
                 customer={editingCustomer}
                 onComplete={(updatedCustomer) => {
                   // Update customer in the list
-                  setCustomers(customers.map(c => 
+                  setCustomers(customers.map(c =>
                     c.id === editingCustomer.id ? { ...updatedCustomer, id: editingCustomer.id } : c
                   ));
                   setShowEdit(false);

@@ -85,53 +85,53 @@ const Dashboard = () => {
         <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-4 border border-white/50 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Today's Sales</p>
+              <p className="text-base text-gray-600">Today's Sales</p>
               <p className="text-2xl font-bold text-gray-900">₹45,200</p>
             </div>
             <div className="bg-green-100 p-2 rounded-xl">
               <TrendingUp className="h-5 w-5 text-green-600" />
             </div>
           </div>
-          <p className="text-xs text-green-600 mt-2">+12.5% from yesterday</p>
+          <p className="text-base text-green-600 mt-2">+12.5% from yesterday</p>
         </div>
 
         <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-4 border border-white/50 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Active Policies</p>
+              <p className="text-base text-gray-600">Active Policies</p>
               <p className="text-2xl font-bold text-gray-900">1,156</p>
             </div>
             <div className="bg-blue-100 p-2 rounded-xl">
               <Calendar className="h-5 w-5 text-blue-600" />
             </div>
           </div>
-          <p className="text-xs text-blue-600 mt-2">+8.2% this month</p>
+          <p className="text-base text-blue-600 mt-2">+8.2% this month</p>
         </div>
 
         <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-4 border border-white/50 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">New Customers</p>
+              <p className="text-base text-gray-600">New Customers</p>
               <p className="text-2xl font-bold text-gray-900">28</p>
             </div>
             <div className="bg-purple-100 p-2 rounded-xl">
               <Plus className="h-5 w-5 text-purple-600" />
             </div>
           </div>
-          <p className="text-xs text-purple-600 mt-2">+15.3% this week</p>
+          <p className="text-base text-purple-600 mt-2">+15.3% this week</p>
         </div>
 
         <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-4 border border-white/50 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Pending Calls</p>
+              <p className="text-base text-gray-600">Pending Calls</p>
               <p className="text-2xl font-bold text-gray-900">12</p>
             </div>
             <div className="bg-orange-100 p-2 rounded-xl">
               <Bell className="h-5 w-5 text-orange-600" />
             </div>
           </div>
-          <p className="text-xs text-orange-600 mt-2">3 urgent</p>
+          <p className="text-base text-orange-600 mt-2">3 urgent</p>
         </div>
       </div>
 
@@ -144,9 +144,9 @@ const Dashboard = () => {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">Sales Overview</h2>
-                <p className="text-sm text-gray-600">Monthly performance trends</p>
+                <p className="text-base text-gray-600">Monthly performance trends</p>
               </div>
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
+              <div className="flex items-center space-x-2 text-base text-gray-500">
                 <Calendar className="h-4 w-4" />
                 <span>Last 6 months</span>
               </div>
@@ -163,14 +163,14 @@ const Dashboard = () => {
                       minHeight: '8px'
                     }}
                   />
-                  <span className="text-xs font-medium text-gray-600">{data.month}</span>
+                  <span className="text-base font-medium text-gray-600">{data.month}</span>
                 </div>
               ))}
             </div>
 
             <div className="mt-6 pt-4 border-t border-gray-100">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Current Month Sales</span>
+                <span className="text-base text-gray-600">Current Month Sales</span>
                 <span className="text-lg font-bold text-purple-700">
                   ₹{salesData[salesData.length - 1].sales.toLocaleString()}
                 </span>
@@ -200,14 +200,14 @@ const Dashboard = () => {
             className="bg-gradient-to-r from-purple-600 to-purple-800 text-white p-4 h-auto rounded-2xl shadow-lg"
           >
             <Plus className="h-5 w-5 mr-2" />
-            <span className="text-sm font-medium">Add Customer</span>
+            <span className="text-base font-medium">Add Customer</span>
           </Button>
           <Button
             onClick={() => navigate("/customers")}
             variant="outline"
             className="border-gray-200 p-4 h-auto rounded-2xl bg-white/70 backdrop-blur-sm"
           >
-            <span className="text-sm font-medium text-gray-700">View All</span>
+            <span className="text-base font-medium text-gray-700">View All</span>
           </Button>
         </div>
       </div>

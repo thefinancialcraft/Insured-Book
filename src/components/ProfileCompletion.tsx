@@ -230,7 +230,7 @@ const ProfileCompletion = () => {
                         <User className="w-8 h-8 text-green-500" />
                     </span>
                     <h2 className="text-2xl font-semibold text-gray-800 mb-1 tracking-tight">Complete Your Profile</h2>
-                    <p className="text-gray-400 text-sm">Please provide your details to complete your account setup</p>
+                    <p className="text-gray-400 text-base">Please provide your details to complete your account setup</p>
                 </div>
 
                 {success ? (
@@ -243,14 +243,14 @@ const ProfileCompletion = () => {
                 ) : (
                     <form onSubmit={handleSubmit} className="space-y-4">
                         {error && (
-                            <div className="bg-red-50 text-red-600 px-3 py-2 rounded mb-2 text-center text-sm border border-red-100 flex items-center gap-2">
+                            <div className="bg-red-50 text-red-600 px-3 py-2 rounded mb-2 text-center text-base border border-red-100 flex items-center gap-2">
                                 <AlertCircle className="w-4 h-4" />
                                 {error}
                             </div>
                         )}
 
                         <div>
-                            <label htmlFor="userName" className="block text-xs font-medium text-gray-500 mb-1 flex items-center gap-1">
+                            <label htmlFor="userName" className="block text-base font-medium text-gray-500 mb-1 flex items-center gap-1">
                                 <User className="w-3 h-3" />
                                 Full Name *
                             </label>
@@ -269,7 +269,7 @@ const ProfileCompletion = () => {
                         </div>
 
                         <div>
-                            <label htmlFor="email" className="block text-xs font-medium text-gray-500 mb-1 flex items-center gap-1">
+                            <label htmlFor="email" className="block text-base font-medium text-gray-500 mb-1 flex items-center gap-1">
                                 <Mail className="w-3 h-3" />
                                 Email *
                             </label>
@@ -287,7 +287,7 @@ const ProfileCompletion = () => {
                         </div>
 
                         <div>
-                            <label htmlFor="contactNo" className="block text-xs font-medium text-gray-500 mb-1 flex items-center gap-1">
+                            <label htmlFor="contactNo" className="block text-base font-medium text-gray-500 mb-1 flex items-center gap-1">
                                 <Phone className="w-3 h-3" />
                                 Contact Number *
                             </label>
@@ -306,7 +306,7 @@ const ProfileCompletion = () => {
                         </div>
 
                         <div>
-                            <label htmlFor="address" className="block text-xs font-medium text-gray-500 mb-1 flex items-center gap-1">
+                            <label htmlFor="address" className="block text-base font-medium text-gray-500 mb-1 flex items-center gap-1">
                                 <MapPin className="w-3 h-3" />
                                 Address *
                             </label>
@@ -325,7 +325,7 @@ const ProfileCompletion = () => {
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                             <div>
-                                <label htmlFor="state" className="block text-xs font-medium text-gray-500 mb-1">State *</label>
+                                <label htmlFor="state" className="block text-base font-medium text-gray-500 mb-1">State *</label>
                                 <select
                                     id="state"
                                     name="state"
@@ -345,7 +345,7 @@ const ProfileCompletion = () => {
                             </div>
 
                             <div>
-                                <label htmlFor="city" className="block text-xs font-medium text-gray-500 mb-1">City *</label>
+                                <label htmlFor="city" className="block text-base font-medium text-gray-500 mb-1">City *</label>
                                 <select
                                     id="city"
                                     name="city"
@@ -365,7 +365,7 @@ const ProfileCompletion = () => {
                             </div>
 
                             <div>
-                                <label htmlFor="pincode" className="block text-xs font-medium text-gray-500 mb-1">Pincode *</label>
+                                <label htmlFor="pincode" className="block text-base font-medium text-gray-500 mb-1">Pincode *</label>
                                 <input
                                     id="pincode"
                                     name="pincode"
@@ -382,7 +382,7 @@ const ProfileCompletion = () => {
                         </div>
 
                         <div>
-                            <label htmlFor="dob" className="block text-xs font-medium text-gray-500 mb-1 flex items-center gap-1">
+                            <label htmlFor="dob" className="block text-base font-medium text-gray-500 mb-1 flex items-center gap-1">
                                 <Calendar className="w-3 h-3" />
                                 Date of Birth *
                             </label>

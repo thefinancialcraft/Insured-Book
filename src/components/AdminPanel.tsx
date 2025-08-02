@@ -205,10 +205,7 @@ const AdminPanel = () => {
         try {
             console.log("Approving user:", userId);
 
-            // Set current admin ID for logging
-            if (user) {
-                await supabase.rpc('set_current_admin', { admin_id: user.id });
-            }
+            // Admin tracking is now handled automatically by database trigger using auth.uid()
 
             const { error } = await supabase
                 .from('user_profiles')
@@ -237,10 +234,7 @@ const AdminPanel = () => {
 
     const rejectUser = async (userId: string) => {
         try {
-            // Set current admin ID for logging
-            if (user) {
-                await supabase.rpc('set_current_admin', { admin_id: user.id });
-            }
+            // Admin tracking is now handled automatically by database trigger using auth.uid()
 
             const { error } = await supabase
                 .from('user_profiles')
@@ -269,10 +263,7 @@ const AdminPanel = () => {
 
     const holdUser = async (userId: string, days?: number, customEndDate?: string) => {
         try {
-            // Set current admin ID for logging
-            if (user) {
-                await supabase.rpc('set_current_admin', { admin_id: user.id });
-            }
+            // Admin tracking is now handled automatically by database trigger using auth.uid()
 
             let holdEndDate: string;
             let holdDays: number;
@@ -324,10 +315,7 @@ const AdminPanel = () => {
 
     const suspendUser = async (userId: string) => {
         try {
-            // Set current admin ID for logging
-            if (user) {
-                await supabase.rpc('set_current_admin', { admin_id: user.id });
-            }
+            // Admin tracking is now handled automatically by database trigger using auth.uid()
 
             const { error } = await supabase
                 .from('user_profiles')
@@ -360,10 +348,7 @@ const AdminPanel = () => {
 
     const activateUser = async (userId: string) => {
         try {
-            // Set current admin ID for logging
-            if (user) {
-                await supabase.rpc('set_current_admin', { admin_id: user.id });
-            }
+            // Admin tracking is now handled automatically by database trigger using auth.uid()
 
             const { error } = await supabase
                 .from('user_profiles')
@@ -392,10 +377,7 @@ const AdminPanel = () => {
 
     const updateUserRole = async (userId: string, newRole: string) => {
         try {
-            // Set current admin ID for logging
-            if (user) {
-                await supabase.rpc('set_current_admin', { admin_id: user.id });
-            }
+            // Admin tracking is now handled automatically by database trigger using auth.uid()
 
             const { error } = await supabase
                 .from('user_profiles')

@@ -135,13 +135,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Create function to set current admin for logging
-CREATE OR REPLACE FUNCTION set_current_admin(admin_id UUID)
-RETURNS VOID AS $$
-BEGIN
-    PERFORM set_config('app.current_admin_id', admin_id::TEXT, false);
-END;
-$$ LANGUAGE plpgsql;
+-- Note: Admin tracking is now handled automatically using auth.uid() in the trigger
 
 -- Create function to log user activities
 CREATE OR REPLACE FUNCTION log_user_activity(
@@ -226,8 +220,8 @@ DECLARE
     current_admin_name TEXT;
     current_admin_employee_id TEXT;
 BEGIN
-    -- Get current admin information from session
-    current_admin_id := current_setting('app.current_admin_id', true)::UUID;
+    -- Get current admin information from auth context
+    current_admin_id := auth.uid();
     
     -- Get admin details if available
     IF current_admin_id IS NOT NULL THEN

@@ -144,7 +144,7 @@ const CallPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-6">
+    <div className="container mx-auto px-4 md:px-6 py-6 md:py-8 animate-fade-in">
       {/* Debug info */}
       <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
         <h3 className="font-medium text-blue-900 mb-2">Debug Information</h3>

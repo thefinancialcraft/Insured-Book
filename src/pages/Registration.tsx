@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { TrendingUp } from "lucide-react";
+import { ArrowLeft, FileText, UserPlus } from "lucide-react";
 import { CustomerRegistration } from "@/components/CustomerRegistration";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -8,7 +8,7 @@ const Registration = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [customerData, setCustomerData] = useState(null);
-  
+
   const isEdit = searchParams.get("edit") === "true";
   const customerId = searchParams.get("customerId");
 
@@ -53,7 +53,7 @@ const Registration = () => {
           nomineeRelation: "Husband"
         }
       ];
-      
+
       const customer = mockCustomers.find(c => c.id === parseInt(customerId));
       setCustomerData(customer || null);
     }
@@ -64,41 +64,59 @@ const Registration = () => {
   };
 
   const handleBackToDashboard = () => {
-    navigate("/");
+    navigate("/dashboard");
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">
-            {isEdit ? "Edit Customer" : "Customer Registration"}
-          </h1>
-          <p className="text-muted-foreground">
-            {isEdit ? "Update customer and policy details" : "Add new customer and policy details"}
-          </p>
+    <div className="container mx-auto px-2 md:px-4 py-4 md:py-8 flex flex-col items-center animate-fade-in">
+      {/* Modern Header */}
+      <div className="w-full max-w-2xl mb-6">
+        <div className="flex items-center gap-3 mb-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleBackToDashboard}
+            className="border border-gray-200 bg-white/60 hover:bg-white/80 shadow-md"
+          >
+            <ArrowLeft className="h-5 w-5 text-purple-700" />
+          </Button>
+          <div className="flex items-center gap-3">
+            <div className="bg-gradient-to-r from-purple-600 to-purple-800 p-3 rounded-2xl shadow-lg">
+              {isEdit ? (
+                <FileText className="h-6 w-6 text-white" />
+              ) : (
+                <UserPlus className="h-6 w-6 text-white" />
+              )}
+            </div>
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+                {isEdit ? "Edit Customer" : "Customer Registration"}
+              </h1>
+              <p className="text-xs md:text-sm text-gray-600">
+                {isEdit ? "Update customer and policy details" : "Add new customer and policy details"}
+              </p>
+            </div>
+          </div>
         </div>
-        <Button 
-          variant="outline" 
-          onClick={handleBackToDashboard}
-          className="hidden md:flex"
-        >
-          Back to Dashboard
-        </Button>
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={handleBackToDashboard}
-          className="md:hidden"
-        >
-          <TrendingUp className="h-4 w-4" />
-        </Button>
       </div>
-      <CustomerRegistration 
-        onComplete={handleComplete} 
-        customer={customerData}
-        isEdit={isEdit}
-      />
+
+      {/* Registration Form Card */}
+      <div className="w-full max-w-2xl bg-white/80 backdrop-blur-md rounded-3xl border border-white/50 shadow-2xl p-3 md:p-8 transition-all duration-300">
+        {/* Step Indicator */}
+        <div className="flex items-center justify-center mb-6">
+          <div className="flex gap-2">
+            <div className="h-2 w-8 rounded-full bg-purple-600" />
+            <div className="h-2 w-8 rounded-full bg-purple-300" />
+            <div className="h-2 w-8 rounded-full bg-purple-100" />
+          </div>
+        </div>
+        {/* Registration Form */}
+        <CustomerRegistration
+          onComplete={handleComplete}
+          customer={customerData}
+          isEdit={isEdit}
+        />
+      </div>
     </div>
   );
 };

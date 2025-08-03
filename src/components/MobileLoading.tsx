@@ -12,35 +12,65 @@ const MobileLoading: React.FC<MobileLoadingProps> = ({
     showProgress = false,
     progress = 0
 }) => {
+    // Calculate SVG circle parameters
+    const radius = 30;
+    const circumference = 2 * Math.PI * radius;
+    const strokeDasharray = circumference;
+    const strokeDashoffset = circumference - (progress / 100) * circumference;
+
     return (
         <div className="mobile-loading-container no-select">
             <div className="mobile-loading-content">
                 {/* Main loading spinner */}
                 <div className="relative mb-6">
                     {showProgress ? (
-                        // Progress ring
-                        <div className="mobile-progress-ring">
-                            {/* Background circle */}
-                            <div className="mobile-progress-background"></div>
+                        // SVG Progress ring - more reliable than CSS
+                        <div className="relative w-20 h-20 mx-auto">
+                            <svg
+                                className="w-20 h-20 transform -rotate-90 mobile-progress-svg"
+                                viewBox="0 0 80 80"
+                            >
+                                {/* Background circle */}
+                                <circle
+                                    cx="40"
+                                    cy="40"
+                                    r={radius}
+                                    stroke="#e5e7eb"
+                                    strokeWidth="6"
+                                    fill="transparent"
+                                />
 
-                            {/* Progress circle */}
-                            <div
-                                className="mobile-progress-fill"
-                                style={{
-                                    background: `conic-gradient(from 0deg, #4f46e5 0deg, #4f46e5 ${progress * 3.6}deg, transparent ${progress * 3.6}deg, transparent 360deg)`
-                                }}
-                            ></div>
+                                {/* Progress circle */}
+                                <circle
+                                    cx="40"
+                                    cy="40"
+                                    r={radius}
+                                    stroke="#4f46e5"
+                                    strokeWidth="6"
+                                    fill="transparent"
+                                    strokeLinecap="round"
+                                    strokeDasharray={strokeDasharray}
+                                    strokeDashoffset={strokeDashoffset}
+                                    className="mobile-progress-circle"
+                                />
+                            </svg>
 
-                            {/* Center content */}
+                            {/* Center percentage */}
                             <div className="absolute inset-0 flex items-center justify-center">
-                                <span className="text-xs font-semibold text-indigo-600">
+                                <span className="text-sm font-semibold text-indigo-600">
                                     {Math.round(progress)}%
                                 </span>
                             </div>
+
+                            {/* Subtle pulse ring effect */}
+                            <div className="absolute inset-0 w-20 h-20 rounded-full border-2 border-indigo-200 mobile-pulse-ring"></div>
                         </div>
                     ) : (
-                        // Regular spinner
-                        <Loader2 className="w-12 h-12 animate-spin mx-auto text-indigo-600" />
+                        // Regular spinner with pulse effect
+                        <div className="relative">
+                            <Loader2 className="w-12 h-12 animate-spin mx-auto text-indigo-600" />
+                            <div className="absolute inset-0 w-12 h-12 rounded-full border-2 border-indigo-200 mobile-pulse-ring"></div>
+                        </div>
                     )}
                 </div>
 

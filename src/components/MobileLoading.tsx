@@ -66,10 +66,21 @@ const MobileLoading: React.FC<MobileLoadingProps> = ({
                             <div className="absolute inset-0 w-20 h-20 rounded-full border-2 border-indigo-200 mobile-pulse-ring"></div>
                         </div>
                     ) : (
-                        // Regular spinner with pulse effect
-                        <div className="relative">
-                            <Loader2 className="w-12 h-12 animate-spin mx-auto text-indigo-600" />
-                            <div className="absolute inset-0 w-12 h-12 rounded-full border-2 border-indigo-200 mobile-pulse-ring"></div>
+                        // Enhanced spinner with multiple layers
+                        <div className="relative w-16 h-16 mx-auto">
+                            {/* Outer rotating ring */}
+                            <div className="absolute inset-0 w-16 h-16 border-4 border-indigo-100 rounded-full"></div>
+
+                            {/* Main spinning ring */}
+                            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-indigo-600 rounded-full animate-spin"></div>
+
+                            {/* Inner pulsing circle */}
+                            <div className="absolute inset-2 w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center">
+                                <div className="w-6 h-6 bg-indigo-600 rounded-full animate-pulse"></div>
+                            </div>
+
+                            {/* Pulse ring effect */}
+                            <div className="absolute inset-0 w-16 h-16 rounded-full border-2 border-indigo-200 mobile-pulse-ring"></div>
                         </div>
                     )}
                 </div>
@@ -86,11 +97,11 @@ const MobileLoading: React.FC<MobileLoadingProps> = ({
                     </p>
                 )}
 
-                {/* Mobile-friendly loading dots */}
-                <div className="mobile-loading-dots">
-                    <div className="mobile-loading-dot"></div>
-                    <div className="mobile-loading-dot"></div>
-                    <div className="mobile-loading-dot"></div>
+                {/* Enhanced mobile-friendly loading dots */}
+                <div className="flex justify-center space-x-2 mb-4">
+                    <div className="w-3 h-3 bg-indigo-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                    <div className="w-3 h-3 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                    <div className="w-3 h-3 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                 </div>
 
                 {/* Mobile-specific hints */}

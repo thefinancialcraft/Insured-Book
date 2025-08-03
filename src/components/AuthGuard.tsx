@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfileCompletion } from "@/hooks/useProfileCompletion";
 import { useLocation, useNavigate } from "react-router-dom";
+import MobileLoading from "./MobileLoading";
 
 const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
@@ -12,6 +13,12 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   const lastRedirectPath = useRef<string | null>(null);
 
   useEffect(() => {
+    // Don't interfere with auth callback processing
+    if (location.pathname === "/auth/callback") {
+      console.log("On auth callback page, skipping AuthGuard checks");
+      return;
+    }
+
     // Wait for both auth and profile to be loaded
     if (loading || profileLoading) {
       return;
@@ -153,9 +160,10 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   // Show loading spinner while checking authentication
   if (loading || profileLoading || !isInitialized) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
-      </div>
+      <MobileLoading
+        message="Checking Authentication"
+        showProgress={false}
+      />
     );
   }
 

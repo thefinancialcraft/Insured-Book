@@ -2,110 +2,180 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { Loader2 } from "lucide-react";
+import MobileLoading from "@/components/MobileLoading";
 
 const AuthCallback = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
+  const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
+  const [attempts, setAttempts] = useState(0);
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     const handleAuthCallback = async () => {
-      try {
-        // Wait a moment for auth state to settle
-        await new Promise(resolve => setTimeout(resolve, 1000));
+      // Prevent multiple simultaneous processing
+      if (processing) return;
 
+      setProcessing(true);
+      setProgress(10);
+
+      try {
+        console.log("=== AUTH CALLBACK STARTED ===");
+        console.log("Auth loading:", loading);
+        console.log("User:", user?.id);
+        console.log("Attempt:", attempts + 1);
+
+        // Wait for auth to be ready (longer wait for mobile)
+        if (loading) {
+          console.log("Auth still loading, waiting...");
+          setProgress(20);
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+
+        // Additional wait for auth state to settle (especially important for mobile)
+        setProgress(40);
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        // If still no user after waiting, try to get session manually
         if (!user) {
-          setError("Authentication failed");
-          setLoading(false);
-          return;
+          console.log("No user after waiting, trying to get session manually");
+          setProgress(60);
+          const { data: { session } } = await supabase.auth.getSession();
+
+          if (!session?.user) {
+            console.log("No session found, authentication failed");
+            setError("Authentication failed. Please try logging in again.");
+            setProcessing(false);
+            return;
+          }
         }
 
         // Check if user has a complete profile
+        console.log("Fetching user profile...");
+        setProgress(80);
         const { data: profile, error: profileError } = await supabase
           .from('user_profiles')
           .select('*')
-          .eq('user_id', user.id)
+          .eq('user_id', user?.id || '')
           .single();
+
+        console.log("Profile fetch result:", { profile, error: profileError });
 
         if (profileError && profileError.code !== 'PGRST116') {
           console.error('Error fetching profile:', profileError);
-          setError("Failed to fetch user profile");
-          setLoading(false);
+          setError("Failed to fetch user profile. Please try again.");
+          setProcessing(false);
           return;
         }
+
+        setProgress(100);
 
         // If user has no profile, redirect to profile completion
         if (!profile) {
           console.log('No profile found, redirecting to profile completion');
-          navigate('/profile-completion');
+          navigate('/profile-completion', { replace: true });
           return;
         }
 
         // If user is admin and approved, redirect to admin panel
-        if (profile.role === 'admin' && profile.status === 'approved') {
+        if (profile.role === 'admin' && profile.approval_status === 'approved') {
           console.log('Admin user detected, redirecting to admin panel');
-          navigate('/admin');
+          navigate('/admin', { replace: true });
           return;
         }
 
         // If user has complete profile but needs approval
-        if (profile.status === 'pending') {
+        if (profile.approval_status === 'pending') {
           console.log('Profile complete but pending approval');
-          navigate('/approval-pending');
-          return;
-        }
-
-        // If user is approved, redirect to dashboard
-        if (profile.status === 'approved') {
-          console.log('User approved, redirecting to dashboard');
-          navigate('/');
+          navigate('/approval-pending', { replace: true });
           return;
         }
 
         // If user is rejected
-        if (profile.status === 'rejected') {
+        if (profile.approval_status === 'rejected') {
           console.log('User rejected');
-          navigate('/approval-pending');
+          navigate('/rejected', { replace: true });
           return;
         }
 
+        // If user is approved, check status
+        if (profile.approval_status === 'approved') {
+          if (profile.status === 'hold') {
+            console.log('User approved but on hold');
+            navigate('/hold', { replace: true });
+            return;
+          }
+
+          if (profile.status === 'suspend') {
+            console.log('User approved but suspended');
+            navigate('/suspended', { replace: true });
+            return;
+          }
+
+          if (profile.status === 'active') {
+            console.log('User approved and active, redirecting to dashboard');
+            navigate('/', { replace: true });
+            return;
+          }
+        }
+
         // Default fallback
-        navigate('/profile-completion');
+        console.log('Default fallback to profile completion');
+        navigate('/profile-completion', { replace: true });
+
       } catch (error) {
         console.error('Auth callback error:', error);
-        setError("An error occurred during authentication");
+        setError("An error occurred during authentication. Please try again.");
       } finally {
-        setLoading(false);
+        setProcessing(false);
       }
     };
 
-    handleAuthCallback();
-  }, [user, navigate]);
+    // Only process if we have a user or if auth is still loading
+    if (user || loading) {
+      handleAuthCallback();
+    } else if (!loading && !user && attempts < 3) {
+      // Retry logic for mobile devices
+      const timer = setTimeout(() => {
+        setAttempts(prev => prev + 1);
+      }, 2000);
 
-  if (loading) {
+      return () => clearTimeout(timer);
+    }
+  }, [user, loading, navigate, processing, attempts]);
+
+  if (processing || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-indigo-600" />
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">Processing Authentication</h2>
-          <p className="text-gray-600">Please wait while we set up your account...</p>
-        </div>
-      </div>
+      <MobileLoading
+        message="Processing Authentication"
+        showProgress={true}
+        progress={progress}
+      />
     );
   }
 
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
+        <div className="text-center max-w-md mx-auto px-4">
           <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg mb-4">
             {error}
           </div>
           <button
+            onClick={() => {
+              setError("");
+              setAttempts(0);
+              setProcessing(false);
+              setProgress(0);
+            }}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md mr-2"
+          >
+            Try Again
+          </button>
+          <button
             onClick={() => navigate('/login')}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md"
+            className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md"
           >
             Back to Login
           </button>

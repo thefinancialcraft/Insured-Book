@@ -32,20 +32,46 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
+    console.log("=== AUTH CONTEXT INITIALIZING ===");
 
-    // Listen for auth changes
+    // Get initial session with better error handling
+    const initializeAuth = async () => {
+      try {
+        console.log("Getting initial session...");
+        const { data: { session }, error } = await supabase.auth.getSession();
+
+        if (error) {
+          console.error("Error getting initial session:", error);
+        }
+
+        console.log("Initial session:", session?.user?.id);
+        setSession(session)
+        setUser(session?.user ?? null)
+      } catch (error) {
+        console.error("Error in auth initialization:", error);
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    initializeAuth();
+
+    // Listen for auth changes with better error handling
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("=== AUTH STATE CHANGE ===");
+      console.log("Event:", event);
+      console.log("Session user:", session?.user?.id);
+
+      try {
+        setSession(session)
+        setUser(session?.user ?? null)
+        setLoading(false)
+      } catch (error) {
+        console.error("Error handling auth state change:", error);
+        setLoading(false)
+      }
     })
 
     return () => subscription.unsubscribe()
@@ -71,7 +97,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`
+        redirectTo: `${window.location.origin}/auth/callback`,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        }
       }
     })
     return { error }

@@ -18,101 +18,113 @@ import Registration from "./pages/Registration";
 import CallManagementPage from "./pages/CallManagementPage";
 import CallPage from "./pages/CallPage";
 import NotFound from "./pages/NotFound";
+import { useMobileOptimizations } from "./hooks/use-mobile";
+import MobileErrorBoundary from "./components/MobileErrorBoundary";
+
+// Mobile optimization component
+const MobileOptimizer = ({ children }: { children: React.ReactNode }) => {
+  useMobileOptimizations();
+  return <>{children}</>;
+};
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
+    <MobileErrorBoundary>
+      <MobileOptimizer>
+        <AuthProvider>
+          <Router>
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/signup" element={<SignupPage />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
 
-          {/* Protected routes with Layout */}
-          <Route
-            path="/"
-            element={
-              <AuthGuard>
-                <Layout />
-              </AuthGuard>
-            }
-          >
-            <Route index element={<Dashboard />} />
-            <Route path="customers" element={<Customers />} />
-            <Route path="registration" element={<Registration />} />
-            <Route path="call-management" element={<CallManagementPage />} />
-          </Route>
+              {/* Protected routes with Layout */}
+              <Route
+                path="/"
+                element={
+                  <AuthGuard>
+                    <Layout />
+                  </AuthGuard>
+                }
+              >
+                <Route index element={<Dashboard />} />
+                <Route path="customers" element={<Customers />} />
+                <Route path="registration" element={<Registration />} />
+                <Route path="call-management" element={<CallManagementPage />} />
+              </Route>
 
-          {/* Standalone pages (no header/navigation) */}
-          <Route
-            path="/profile-completion"
-            element={
-              <AuthGuard>
-                <ProfileCompletion />
-              </AuthGuard>
-            }
-          />
+              {/* Standalone pages (no header/navigation) */}
+              <Route
+                path="/profile-completion"
+                element={
+                  <AuthGuard>
+                    <ProfileCompletion />
+                  </AuthGuard>
+                }
+              />
 
-          <Route
-            path="/approval-pending"
-            element={
-              <AuthGuard>
-                <ApprovalPending />
-              </AuthGuard>
-            }
-          />
+              <Route
+                path="/approval-pending"
+                element={
+                  <AuthGuard>
+                    <ApprovalPending />
+                  </AuthGuard>
+                }
+              />
 
-          <Route
-            path="/rejected"
-            element={
-              <AuthGuard>
-                <RejectionPage />
-              </AuthGuard>
-            }
-          />
+              <Route
+                path="/rejected"
+                element={
+                  <AuthGuard>
+                    <RejectionPage />
+                  </AuthGuard>
+                }
+              />
 
-          <Route
-            path="/suspended"
-            element={
-              <AuthGuard>
-                <SuspendedUser />
-              </AuthGuard>
-            }
-          />
+              <Route
+                path="/suspended"
+                element={
+                  <AuthGuard>
+                    <SuspendedUser />
+                  </AuthGuard>
+                }
+              />
 
-          <Route
-            path="/hold"
-            element={
-              <AuthGuard>
-                <HoldUser />
-              </AuthGuard>
-            }
-          />
+              <Route
+                path="/hold"
+                element={
+                  <AuthGuard>
+                    <HoldUser />
+                  </AuthGuard>
+                }
+              />
 
-          <Route
-            path="/admin"
-            element={
-              <AuthGuard>
-                <AdminPanel />
-              </AuthGuard>
-            }
-          />
+              <Route
+                path="/admin"
+                element={
+                  <AuthGuard>
+                    <AdminPanel />
+                  </AuthGuard>
+                }
+              />
 
-          {/* Call page with customer parameters */}
-          <Route
-            path="/call"
-            element={
-              <AuthGuard>
-                <CallPage />
-              </AuthGuard>
-            }
-          />
+              {/* Call page with customer parameters */}
+              <Route
+                path="/call"
+                element={
+                  <AuthGuard>
+                    <CallPage />
+                  </AuthGuard>
+                }
+              />
 
-          {/* 404 Page */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Router>
-    </AuthProvider>
+              {/* 404 Page */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Router>
+        </AuthProvider>
+      </MobileOptimizer>
+    </MobileErrorBoundary>
   );
 }
 

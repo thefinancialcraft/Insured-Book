@@ -10,7 +10,11 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isInitialized, setIsInitialized] = useState(false);
+  const [loadingStep, setLoadingStep] = useState("");
   const lastRedirectPath = useRef<string | null>(null);
+
+  // Detect if it's a mobile device
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
   useEffect(() => {
     // Don't interfere with auth callback processing
@@ -21,11 +25,14 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
 
     // Wait for both auth and profile to be loaded
     if (loading || profileLoading) {
+      if (loading) setLoadingStep("Checking authentication...");
+      if (profileLoading) setLoadingStep("Loading user profile...");
       return;
     }
 
     // Mark as initialized after first load
     if (!isInitialized) {
+      setLoadingStep("Initializing...");
       setIsInitialized(true);
       return;
     }
@@ -66,6 +73,7 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
     // If user exists but no profile yet, wait
     if (user && !profile) {
       console.log("User exists but profile not loaded yet");
+      setLoadingStep("Loading user data...");
       return;
     }
 
@@ -161,7 +169,7 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   if (loading || profileLoading || !isInitialized) {
     return (
       <MobileLoading
-        message="Checking Authentication"
+        message={loadingStep || "Checking Authentication"}
         showProgress={false}
       />
     );

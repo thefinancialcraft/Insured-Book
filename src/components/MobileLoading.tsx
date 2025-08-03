@@ -13,23 +13,34 @@ const MobileLoading: React.FC<MobileLoadingProps> = ({
     progress = 0
 }) => {
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-            <div className="text-center max-w-sm w-full">
+        <div className="mobile-loading-container no-select">
+            <div className="mobile-loading-content">
                 {/* Main loading spinner */}
                 <div className="relative mb-6">
-                    <Loader2 className="w-12 h-12 animate-spin mx-auto text-indigo-600" />
+                    {showProgress ? (
+                        // Progress ring
+                        <div className="mobile-progress-ring">
+                            {/* Background circle */}
+                            <div className="mobile-progress-background"></div>
 
-                    {/* Progress ring for mobile */}
-                    {showProgress && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="w-12 h-12 rounded-full border-4 border-gray-200 border-t-indigo-600 animate-spin">
-                                <div className="w-full h-full rounded-full bg-transparent"
-                                    style={{
-                                        background: `conic-gradient(from 0deg, #4f46e5 ${progress * 3.6}deg, #e5e7eb ${progress * 3.6}deg)`
-                                    }}>
-                                </div>
+                            {/* Progress circle */}
+                            <div
+                                className="mobile-progress-fill"
+                                style={{
+                                    background: `conic-gradient(from 0deg, #4f46e5 0deg, #4f46e5 ${progress * 3.6}deg, transparent ${progress * 3.6}deg, transparent 360deg)`
+                                }}
+                            ></div>
+
+                            {/* Center content */}
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <span className="text-xs font-semibold text-indigo-600">
+                                    {Math.round(progress)}%
+                                </span>
                             </div>
                         </div>
+                    ) : (
+                        // Regular spinner
+                        <Loader2 className="w-12 h-12 animate-spin mx-auto text-indigo-600" />
                     )}
                 </div>
 
@@ -41,21 +52,26 @@ const MobileLoading: React.FC<MobileLoadingProps> = ({
                 {/* Progress text */}
                 {showProgress && (
                     <p className="text-sm text-gray-600 mb-4">
-                        {Math.round(progress)}% complete
+                        Please wait while we process your request...
                     </p>
                 )}
 
                 {/* Mobile-friendly loading dots */}
-                <div className="flex justify-center space-x-1">
-                    <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                    <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                    <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                <div className="mobile-loading-dots">
+                    <div className="mobile-loading-dot"></div>
+                    <div className="mobile-loading-dot"></div>
+                    <div className="mobile-loading-dot"></div>
                 </div>
 
-                {/* Mobile-specific hint */}
-                <p className="text-xs text-gray-500 mt-4">
-                    Please don't close this page
-                </p>
+                {/* Mobile-specific hints */}
+                <div className="space-y-2">
+                    <p className="text-xs text-gray-500">
+                        Please don't close this page
+                    </p>
+                    <p className="text-xs text-gray-400">
+                        This may take a few moments on mobile devices
+                    </p>
+                </div>
             </div>
         </div>
     );

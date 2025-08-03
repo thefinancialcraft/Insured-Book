@@ -32,9 +32,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    console.log("=== AUTH CONTEXT INITIALIZING ===");
+    console.log("=== AUTH PROVIDER INITIALIZING ===");
 
-    // Get initial session with better error handling
+    // Get initial session
     const initializeAuth = async () => {
       try {
         console.log("Getting initial session...");
@@ -47,31 +47,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.log("Initial session:", session?.user?.id);
         setSession(session)
         setUser(session?.user ?? null)
+        setLoading(false)
       } catch (error) {
-        console.error("Error in auth initialization:", error);
-      } finally {
+        console.error("Error in initializeAuth:", error);
         setLoading(false)
       }
     }
 
     initializeAuth();
 
-    // Listen for auth changes with better error handling
+    // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("=== AUTH STATE CHANGE ===");
-      console.log("Event:", event);
-      console.log("Session user:", session?.user?.id);
-
-      try {
-        setSession(session)
-        setUser(session?.user ?? null)
-        setLoading(false)
-      } catch (error) {
-        console.error("Error handling auth state change:", error);
-        setLoading(false)
-      }
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state change:", event, session?.user?.id);
+      setSession(session)
+      setUser(session?.user ?? null)
+      setLoading(false)
     })
 
     return () => subscription.unsubscribe()

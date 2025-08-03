@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfileCompletion } from "@/hooks/useProfileCompletion";
 import { useLocation, useNavigate } from "react-router-dom";
-import MobileLoading from "./MobileLoading";
 
 const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
@@ -10,29 +9,16 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isInitialized, setIsInitialized] = useState(false);
-  const [loadingStep, setLoadingStep] = useState("");
   const lastRedirectPath = useRef<string | null>(null);
 
-  // Detect if it's a mobile device
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
   useEffect(() => {
-    // Don't interfere with auth callback processing
-    if (location.pathname === "/auth/callback") {
-      console.log("On auth callback page, skipping AuthGuard checks");
-      return;
-    }
-
     // Wait for both auth and profile to be loaded
     if (loading || profileLoading) {
-      if (loading) setLoadingStep("Checking authentication...");
-      if (profileLoading) setLoadingStep("Loading user profile...");
       return;
     }
 
     // Mark as initialized after first load
     if (!isInitialized) {
-      setLoadingStep("Initializing...");
       setIsInitialized(true);
       return;
     }
@@ -73,7 +59,6 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
     // If user exists but no profile yet, wait
     if (user && !profile) {
       console.log("User exists but profile not loaded yet");
-      setLoadingStep("Loading user data...");
       return;
     }
 
@@ -168,10 +153,9 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   // Show loading spinner while checking authentication
   if (loading || profileLoading || !isInitialized) {
     return (
-      <MobileLoading
-        message={loadingStep || "Checking Authentication"}
-        showProgress={false}
-      />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
+      </div>
     );
   }
 

@@ -388,6 +388,21 @@ const ApprovalPending = () => {
                             Back to Login
                         </button>
 
+                        <button
+                            onClick={async () => {
+                                console.log("Manual profile check:");
+                                const { data, error } = await supabase
+                                    .from('user_profiles')
+                                    .select('*')
+                                    .eq('user_id', user?.id)
+                                    .single();
+                                console.log("Current profile in database:", { data, error });
+                            }}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition"
+                        >
+                            Check Profile Status
+                        </button>
+
                         <p className="text-gray-500 text-sm">
                             You can check this page again later to see your approval status.
                         </p>

@@ -26,6 +26,14 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
     console.log("=== AUTH GUARD DEBUG ===");
     console.log("User:", user?.id);
     console.log("Profile:", profile);
+    console.log("Profile details:", profile ? {
+      id: profile.id,
+      user_name: profile.user_name,
+      approval_status: profile.approval_status,
+      status: profile.status,
+      role: profile.role,
+      created_at: profile.created_at
+    } : "No profile");
     console.log("Current path:", location.pathname);
     console.log("Last redirect path:", lastRedirectPath.current);
     console.log("Needs profile completion:", needsProfileCompletion);
@@ -90,6 +98,14 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
 
       if (profile.approval_status === 'pending' && location.pathname !== "/approval-pending") {
         console.log("User needs approval, redirecting to approval pending");
+        console.log("Profile details in AuthGuard:", {
+          id: profile.id,
+          user_name: profile.user_name,
+          approval_status: profile.approval_status,
+          status: profile.status,
+          role: profile.role,
+          current_path: location.pathname
+        });
         lastRedirectPath.current = "/approval-pending";
         navigate('/approval-pending');
         return;

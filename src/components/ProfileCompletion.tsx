@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import { useProfileCompletion } from "@/hooks/useProfileCompletion";
 import {
     User,
     Mail,
@@ -78,6 +79,7 @@ const indianCities = {
 const ProfileCompletion = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const { profile, loading: profileLoading, refresh: refreshProfile } = useProfileCompletion();
     const [loading, setLoading] = useState(false);
     const [userData, setUserData] = useState<UserData>({
         userName: "",
@@ -176,35 +178,90 @@ const ProfileCompletion = () => {
 
             console.log("Auth user verified:", authUser.user.id);
 
+            const profileData = {
+                user_id: user.id,
+                user_name: userData.userName,
+                email: userData.email,
+                contact_no: userData.contactNo,
+                address: userData.address,
+                city: userData.city,
+                state: userData.state,
+                pincode: userData.pincode,
+                dob: userData.dob,
+                approval_status: 'pending',
+                status: 'active' // Default to active when approved
+            };
+
+            console.log("Inserting profile data:", profileData);
+            console.log("User ID for insert:", user.id);
+
             const { data, error } = await supabase
                 .from('user_profiles')
-                .insert({
-                    user_id: user.id,
-                    user_name: userData.userName,
-                    email: userData.email,
-                    contact_no: userData.contactNo,
-                    address: userData.address,
-                    city: userData.city,
-                    state: userData.state,
-                    pincode: userData.pincode,
-                    dob: userData.dob,
-                    approval_status: 'pending',
-                    status: 'active' // Default to active when approved
-                });
+                .insert(profileData)
+                .select(); // Add select to get the inserted data back
 
             if (error) {
                 console.error("Database error:", error);
+                console.error("Error details:", {
+                    code: error.code,
+                    message: error.message,
+                    details: error.details,
+                    hint: error.hint
+                });
                 if (error.code === '23503') {
                     setError("User account not found. Please try logging in again.");
                 } else {
                     setError(error.message || "Failed to save profile data.");
                 }
             } else {
-                setSuccess(true);
-                setError("");
-                setTimeout(() => {
-                    navigate("/approval-pending");
-                }, 2000);
+                console.log("Profile insert successful, data:", data);
+                console.log("Inserted profile details:", data?.[0] ? {
+                    id: data[0].id,
+                    user_id: data[0].user_id,
+                    user_name: data[0].user_name,
+                    approval_status: data[0].approval_status,
+                    status: data[0].status,
+                    role: data[0].role
+                } : "No data returned");
+
+                // Wait a moment for the database to fully commit the transaction
+                console.log("Waiting for database transaction to commit...");
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // Verify the profile was saved correctly
+                const { data: verifyData, error: verifyError } = await supabase
+                    .from('user_profiles')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .single();
+
+                console.log("Profile verification result:", { verifyData, verifyError });
+
+                // Also check all profiles for this user to see if there are multiple entries
+                const { data: allProfiles, error: allProfilesError } = await supabase
+                    .from('user_profiles')
+                    .select('*')
+                    .eq('user_id', user.id);
+
+                console.log("All profiles for user:", { allProfiles, allProfilesError });
+
+                if (verifyData && verifyData.approval_status === 'pending') {
+                    console.log("Profile verified successfully, refreshing profile data");
+                    setSuccess(true);
+                    setError("");
+
+                    // Refresh the profile data in the hook
+                    await refreshProfile();
+
+                    // Wait a moment for the profile to be refreshed
+                    await new Promise(resolve => setTimeout(resolve, 500));
+
+                    console.log("Profile refreshed, redirecting to approval pending");
+                    navigate("/approval-pending", { replace: true });
+                } else {
+                    console.error("Profile verification failed or approval status incorrect");
+                    setError("Profile saved but verification failed. Please try again.");
+                }
             }
         } catch (error) {
             console.error("Unexpected error:", error);
@@ -239,6 +296,21 @@ const ProfileCompletion = () => {
                             <CheckCircle className="w-4 h-4" />
                             Profile completed successfully! Redirecting to approval page...
                         </div>
+
+                        <button
+                            onClick={async () => {
+                                console.log("Manual profile check after completion:");
+                                const { data, error } = await supabase
+                                    .from('user_profiles')
+                                    .select('*')
+                                    .eq('user_id', user?.id)
+                                    .single();
+                                console.log("Profile after completion:", { data, error });
+                            }}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition text-sm"
+                        >
+                            Check Profile Status
+                        </button>
                     </div>
                 ) : (
                     <form onSubmit={handleSubmit} className="space-y-4">

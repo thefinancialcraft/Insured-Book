@@ -135,6 +135,13 @@ const AuthCallback = () => {
         // If user has complete profile but needs approval
         if (profile.approval_status === 'pending') {
           console.log('Profile complete but pending approval');
+          console.log('Profile details:', {
+            id: profile.id,
+            user_name: profile.user_name,
+            approval_status: profile.approval_status,
+            status: profile.status,
+            role: profile.role
+          });
           updateDebugStep('redirect', 'loading', 'Profile pending approval - redirecting...');
           navigate('/approval-pending', { replace: true });
           return;

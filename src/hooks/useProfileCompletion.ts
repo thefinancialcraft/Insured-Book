@@ -137,6 +137,7 @@ export const useProfileCompletion = () => {
     isApproved: isApproved(),
     isRejected: isRejected(),
     getProfileCompletionPercentage,
-    loading
+    loading,
+    refresh: checkProfileCompletion
   };
 }; 

@@ -98,6 +98,24 @@ const AdminPanel = () => {
 
     // Hold options state
     const [holdOption, setHoldOption] = useState<'1' | '2' | '3' | 'custom'>('1');
+
+    // Notification state for new user registrations
+    const [notifications, setNotifications] = useState<Array<{
+        id: string;
+        message: string;
+        type: 'new_user' | 'user_updated';
+        timestamp: Date;
+        userData?: UserProfile;
+    }>>([]);
+
+    // Sound notification state
+    const [soundEnabled, setSoundEnabled] = useState(true);
+
+    // Track newly registered users for highlighting
+    const [newUserIds, setNewUserIds] = useState<Set<string>>(new Set());
+
+    // Track last refresh time
+    const [lastRefreshTime, setLastRefreshTime] = useState<Date>(new Date());
     const [customHoldDate, setCustomHoldDate] = useState<Date | undefined>(undefined);
     const [customHoldTime, setCustomHoldTime] = useState("");
 
@@ -112,6 +130,82 @@ const AdminPanel = () => {
 
         // Test database connection and schema
         testDatabaseConnection();
+
+        // Set up real-time subscription for new user registrations
+        const channel = supabase
+            .channel('admin_user_updates')
+            .on('postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'user_profiles'
+                },
+                (payload) => {
+                    console.log('New user registered:', payload.new);
+                    const newUser = payload.new as UserProfile;
+
+                    // Add the new user to the list
+                    setUsers(prevUsers => [newUser, ...prevUsers]);
+
+                    // Add notification for new user
+                    const notification = {
+                        id: Date.now().toString(),
+                        message: `New user ${newUser.user_name} has registered and needs approval`,
+                        type: 'new_user' as const,
+                        timestamp: new Date(),
+                        userData: newUser
+                    };
+
+                    setNotifications(prev => [notification, ...prev.slice(0, 4)]); // Keep only last 5 notifications
+                    setError(""); // Clear any existing errors
+
+                    // Play notification sound for new user registrations
+                    playNotificationSound();
+
+                    // Highlight the new user in the table
+                    setNewUserIds(prev => new Set([...prev, newUser.id]));
+
+                    // Remove highlight after 10 seconds
+                    setTimeout(() => {
+                        setNewUserIds(prev => {
+                            const newSet = new Set(prev);
+                            newSet.delete(newUser.id);
+                            return newSet;
+                        });
+                    }, 10000);
+                }
+            )
+            .on('postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'user_profiles'
+                },
+                (payload) => {
+                    console.log('User profile updated:', payload.new);
+                    // Update the user in the list
+                    setUsers(prevUsers =>
+                        prevUsers.map(user =>
+                            user.id === payload.new.id ? payload.new as UserProfile : user
+                        )
+                    );
+                }
+            )
+            .subscribe();
+
+        // Cleanup subscription on unmount
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, []);
+
+    // Periodic refresh every 30 seconds to ensure data is up-to-date
+    useEffect(() => {
+        const interval = setInterval(() => {
+            fetchUsers();
+        }, 30000); // 30 seconds
+
+        return () => clearInterval(interval);
     }, []);
 
     const testDatabaseConnection = async () => {
@@ -163,6 +257,7 @@ const AdminPanel = () => {
                 setError("Failed to fetch users.");
             } else {
                 setUsers(data || []);
+                setLastRefreshTime(new Date());
             }
         } catch (error) {
             setError("An error occurred while fetching users.");
@@ -585,6 +680,39 @@ const AdminPanel = () => {
         }
     };
 
+    const clearNotification = (notificationId: string) => {
+        setNotifications(prev => prev.filter(n => n.id !== notificationId));
+    };
+
+    const clearAllNotifications = () => {
+        setNotifications([]);
+    };
+
+    const playNotificationSound = () => {
+        if (soundEnabled) {
+            try {
+                // Create a simple notification sound using Web Audio API
+                const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.2);
+            } catch (error) {
+                console.log('Could not play notification sound:', error);
+            }
+        }
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -609,12 +737,40 @@ const AdminPanel = () => {
                                     <p className="text-sm text-gray-500">
                                         {currentAdmin?.employee_id ? `ID: ${currentAdmin.employee_id}` : 'Manage users and roles'}
                                     </p>
+                                    <div className="flex items-center gap-4 mt-1">
+                                        <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
+                                            {users.filter(u => u.approval_status === 'pending').length} Pending
+                                        </span>
+                                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                                            {users.filter(u => u.approval_status === 'approved').length} Approved
+                                        </span>
+                                        <span className="text-xs text-gray-500">
+                                            Last updated: {lastRefreshTime.toLocaleTimeString()}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         {/* Admin Profile Section */}
                         <div className="flex items-center space-x-4">
+                            {/* Sound Toggle */}
+                            <button
+                                onClick={() => setSoundEnabled(!soundEnabled)}
+                                className={`flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-md transition ${soundEnabled
+                                        ? 'text-green-700 bg-green-100 hover:bg-green-200'
+                                        : 'text-gray-500 bg-gray-100 hover:bg-gray-200'
+                                    }`}
+                                title={soundEnabled ? 'Sound notifications enabled' : 'Sound notifications disabled'}
+                            >
+                                {soundEnabled ? (
+                                    <CheckCircle className="w-4 h-4" />
+                                ) : (
+                                    <XCircle className="w-4 h-4" />
+                                )}
+                                <span className="hidden sm:inline">Sound</span>
+                            </button>
+
                             <div className="text-right">
                                 <div className="text-sm font-medium text-gray-900">
                                     {currentAdmin?.user_name || user?.email}
@@ -645,6 +801,55 @@ const AdminPanel = () => {
                 {error && (
                     <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg mb-6 border border-red-100">
                         {error}
+                    </div>
+                )}
+
+                {/* Notifications Section */}
+                {notifications.length > 0 && (
+                    <div className="mb-6">
+                        <div className="flex items-center justify-between mb-3">
+                            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                                <AlertTriangle className="w-5 h-5 text-yellow-500" />
+                                Recent Activity
+                            </h3>
+                            <button
+                                onClick={clearAllNotifications}
+                                className="text-sm text-gray-500 hover:text-gray-700"
+                            >
+                                Clear All
+                            </button>
+                        </div>
+                        <div className="space-y-2">
+                            {notifications.map((notification) => (
+                                <div
+                                    key={notification.id}
+                                    className={`p-3 rounded-lg border-l-4 flex items-center justify-between ${notification.type === 'new_user'
+                                            ? 'bg-blue-50 border-blue-400 text-blue-800'
+                                            : 'bg-green-50 border-green-400 text-green-800'
+                                        }`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        {notification.type === 'new_user' ? (
+                                            <User className="w-4 h-4 text-blue-600" />
+                                        ) : (
+                                            <CheckCircle className="w-4 h-4 text-green-600" />
+                                        )}
+                                        <div>
+                                            <p className="text-sm font-medium">{notification.message}</p>
+                                            <p className="text-xs opacity-75">
+                                                {notification.timestamp.toLocaleTimeString()}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => clearNotification(notification.id)}
+                                        className="text-gray-400 hover:text-gray-600"
+                                    >
+                                        <XCircle className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 )}
 
@@ -691,7 +896,13 @@ const AdminPanel = () => {
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {users.map((user) => (
-                                    <tr key={user.id} className="hover:bg-gray-50">
+                                    <tr
+                                        key={user.id}
+                                        className={`hover:bg-gray-50 transition-all duration-300 ${newUserIds.has(user.id)
+                                                ? 'bg-blue-50 border-l-4 border-blue-400 animate-pulse'
+                                                : ''
+                                            }`}
+                                    >
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center">
                                                 <div className="flex-shrink-0 h-10 w-10">
@@ -700,8 +911,13 @@ const AdminPanel = () => {
                                                     </div>
                                                 </div>
                                                 <div className="ml-4">
-                                                    <div className="text-sm font-medium text-gray-900">
+                                                    <div className="text-sm font-medium text-gray-900 flex items-center gap-2">
                                                         {user.user_name}
+                                                        {newUserIds.has(user.id) && (
+                                                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 animate-pulse">
+                                                                NEW
+                                                            </span>
+                                                        )}
                                                     </div>
                                                     <div className="text-sm text-gray-500">
                                                         {user.email}

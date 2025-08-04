@@ -33,7 +33,8 @@ import {
     PieChart,
     FileText,
     MoreHorizontal,
-    MapPin
+    MapPin,
+    ArrowRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1587,61 +1588,155 @@ const AdminPanel = () => {
                     </TabsContent>
                 </Tabs>
 
-                {/* User Details Modal */}
+                {/* Redesigned User Details Modal */}
                 {showDetails && selectedUser && (
-                    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-                        <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-                            <div className="mt-3">
-                                <h3 className="text-lg font-medium text-gray-900 mb-4">User Details</h3>
-                                <div className="space-y-3">
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-500">Name</label>
-                                        <p className="text-sm text-gray-900">{selectedUser.user_name}</p>
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-500">Email</label>
-                                        <p className="text-sm text-gray-900">{selectedUser.email}</p>
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-500">Role</label>
-                                        <p className="text-sm text-gray-900">{getRoleLabel(selectedUser.role)}</p>
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-500">Phone</label>
-                                        <p className="text-sm text-gray-900">{selectedUser.contact_no}</p>
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-500">Address</label>
-                                        <p className="text-sm text-gray-900">{selectedUser.address}</p>
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-500">Location</label>
-                                        <p className="text-sm text-gray-900">{selectedUser.city}, {selectedUser.state} - {selectedUser.pincode}</p>
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-500">Date of Birth</label>
-                                        <p className="text-sm text-gray-900">{new Date(selectedUser.dob).toLocaleDateString()}</p>
-                                    </div>
-                                    {selectedUser.employee_id && (
-                                        <div>
-                                            <label className="text-sm font-medium text-gray-500">Employee ID</label>
-                                            <p className="text-sm text-gray-900">{selectedUser.employee_id}</p>
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
+                        <div className="relative top-10 mx-auto p-0 border-0 w-full max-w-2xl shadow-2xl rounded-2xl bg-white overflow-hidden">
+                            {/* Header with Gradient */}
+                            <div className="relative bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-6 text-white">
+                                <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/20 to-purple-600/20"></div>
+                                <div className="relative z-10">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-4">
+                                            <div className="h-16 w-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
+                                                <User className="h-8 w-8 text-white" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-2xl font-bold">User Details</h3>
+                                                <p className="text-indigo-100 font-medium">{selectedUser.user_name}</p>
+                                            </div>
                                         </div>
-                                    )}
-                                    {selectedUser.joining_date && (
-                                        <div>
-                                            <label className="text-sm font-medium text-gray-500">Joining Date</label>
-                                            <p className="text-sm text-gray-900">{new Date(selectedUser.joining_date).toLocaleDateString()}</p>
-                                        </div>
-                                    )}
+                                        <button
+                                            onClick={() => setShowDetails(false)}
+                                            className="p-2 hover:bg-white/20 rounded-xl transition-all duration-300"
+                                        >
+                                            <XCircle className="w-6 h-6" />
+                                        </button>
+                                    </div>
                                 </div>
-                                <div className="mt-6 flex justify-end">
-                                    <button
+                            </div>
+
+                            {/* Content */}
+                            <div className="p-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {/* Personal Information */}
+                                    <div className="space-y-4">
+                                        <h4 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                                            <User className="w-5 h-5 text-indigo-600" />
+                                            Personal Information
+                                        </h4>
+                                        <div className="space-y-3">
+                                            <div className="bg-gray-50 p-4 rounded-xl">
+                                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Full Name</label>
+                                                <p className="text-lg font-bold text-gray-900 mt-1">{selectedUser.user_name}</p>
+                                            </div>
+                                            <div className="bg-gray-50 p-4 rounded-xl">
+                                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Email Address</label>
+                                                <p className="text-lg font-semibold text-gray-900 mt-1">{selectedUser.email}</p>
+                                            </div>
+                                            <div className="bg-gray-50 p-4 rounded-xl">
+                                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Phone Number</label>
+                                                <p className="text-lg font-semibold text-gray-900 mt-1">{selectedUser.contact_no}</p>
+                                            </div>
+                                            <div className="bg-gray-50 p-4 rounded-xl">
+                                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Date of Birth</label>
+                                                <p className="text-lg font-semibold text-gray-900 mt-1">{new Date(selectedUser.dob).toLocaleDateString()}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Professional Information */}
+                                    <div className="space-y-4">
+                                        <h4 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                                            <Briefcase className="w-5 h-5 text-purple-600" />
+                                            Professional Information
+                                        </h4>
+                                        <div className="space-y-3">
+                                            <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-200">
+                                                <label className="text-xs font-semibold text-purple-600 uppercase tracking-wide">Role</label>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <Badge className={`${getRoleColor(selectedUser.role)} text-sm font-bold px-3 py-1`}>
+                                                        {getRoleIcon(selectedUser.role)}
+                                                        <span className="ml-1">{getRoleLabel(selectedUser.role)}</span>
+                                                    </Badge>
+                                                </div>
+                                            </div>
+                                            {selectedUser.employee_id && (
+                                                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">
+                                                    <label className="text-xs font-semibold text-blue-600 uppercase tracking-wide">Employee ID</label>
+                                                    <p className="text-lg font-bold text-blue-900 mt-1">{selectedUser.employee_id}</p>
+                                                </div>
+                                            )}
+                                            {selectedUser.joining_date && (
+                                                <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200">
+                                                    <label className="text-xs font-semibold text-green-600 uppercase tracking-wide">Joining Date</label>
+                                                    <p className="text-lg font-bold text-green-900 mt-1">{new Date(selectedUser.joining_date).toLocaleDateString()}</p>
+                                                </div>
+                                            )}
+                                            <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-4 rounded-xl border border-amber-200">
+                                                <label className="text-xs font-semibold text-amber-600 uppercase tracking-wide">Account Created</label>
+                                                <p className="text-lg font-bold text-amber-900 mt-1">{new Date(selectedUser.created_at).toLocaleDateString()}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Address Section */}
+                                <div className="mt-6">
+                                    <h4 className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                                        <MapPin className="w-5 h-5 text-green-600" />
+                                        Address Information
+                                    </h4>
+                                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-xl border border-green-200">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="text-xs font-semibold text-green-600 uppercase tracking-wide">Full Address</label>
+                                                <p className="text-lg font-semibold text-green-900 mt-1">{selectedUser.address}</p>
+                                            </div>
+                                            <div>
+                                                <label className="text-xs font-semibold text-green-600 uppercase tracking-wide">Location</label>
+                                                <p className="text-lg font-semibold text-green-900 mt-1">{selectedUser.city}, {selectedUser.state} - {selectedUser.pincode}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Status Information */}
+                                <div className="mt-6">
+                                    <h4 className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                                        <Activity className="w-5 h-5 text-blue-600" />
+                                        Account Status
+                                    </h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">
+                                            <label className="text-xs font-semibold text-blue-600 uppercase tracking-wide">Approval Status</label>
+                                            <div className="mt-1">
+                                                <Badge className={`${getApprovalColor(selectedUser.approval_status)} text-sm font-bold px-3 py-1`}>
+                                                    {getApprovalIcon(selectedUser.approval_status)}
+                                                    <span className="ml-1">{selectedUser.approval_status}</span>
+                                                </Badge>
+                                            </div>
+                                        </div>
+                                        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-xl border border-indigo-200">
+                                            <label className="text-xs font-semibold text-indigo-600 uppercase tracking-wide">Account Status</label>
+                                            <div className="mt-1">
+                                                <Badge className={`${getStatusColor(selectedUser.status)} text-sm font-bold px-3 py-1`}>
+                                                    {getStatusIcon(selectedUser.status)}
+                                                    <span className="ml-1">{selectedUser.status}</span>
+                                                </Badge>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Close Button */}
+                                <div className="mt-8 flex justify-end">
+                                    <Button
                                         onClick={() => setShowDetails(false)}
-                                        className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-md"
+                                        className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
                                     >
-                                        Close
-                                    </button>
+                                        Close Details
+                                    </Button>
                                 </div>
                             </div>
                         </div>
@@ -1810,117 +1905,233 @@ const AdminPanel = () => {
                     </div>
                 )}
 
-                {/* User Activity Logs Modal */}
+                {/* Redesigned User Activity Logs Modal */}
                 {showLogsModal && selectedUser && (
-                    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-                        <div className="relative top-20 mx-auto p-5 border w-[800px] shadow-lg rounded-md bg-white">
-                            <div className="mt-3">
-                                <div className="flex justify-between items-center mb-4">
-                                    <h3 className="text-lg font-medium text-gray-900">
-                                        Activity Logs - {selectedUser.user_name}
-                                    </h3>
-                                    <button
-                                        onClick={() => {
-                                            setShowLogsModal(false);
-                                            setSelectedUser(null);
-                                            setSelectedUserLogs([]);
-                                        }}
-                                        className="text-gray-400 hover:text-gray-600"
-                                    >
-                                        <XCircle className="w-6 h-6" />
-                                    </button>
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
+                        <div className="relative top-10 mx-auto p-0 border-0 w-full max-w-4xl shadow-2xl rounded-2xl bg-white overflow-hidden">
+                            {/* Header with Gradient */}
+                            <div className="relative bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 p-6 text-white">
+                                <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-pink-600/20"></div>
+                                <div className="relative z-10">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-4">
+                                            <div className="h-16 w-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
+                                                <History className="h-8 w-8 text-white" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-2xl font-bold">Activity Logs</h3>
+                                                <p className="text-purple-100 font-medium">{selectedUser.user_name}</p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                setShowLogsModal(false);
+                                                setSelectedUser(null);
+                                                setSelectedUserLogs([]);
+                                            }}
+                                            className="p-2 hover:bg-white/20 rounded-xl transition-all duration-300"
+                                        >
+                                            <XCircle className="w-6 h-6" />
+                                        </button>
+                                    </div>
                                 </div>
+                            </div>
 
+                            {/* Content */}
+                            <div className="p-6">
                                 {logsLoading ? (
-                                    <div className="flex justify-center py-8">
-                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                                    <div className="flex flex-col items-center justify-center py-12">
+                                        <div className="relative">
+                                            <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
+                                            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-pink-600 rounded-full animate-spin" style={{ animationDelay: '0.5s' }}></div>
+                                        </div>
+                                        <p className="text-gray-600 font-medium mt-4">Loading activity logs...</p>
                                     </div>
                                 ) : selectedUserLogs.length === 0 ? (
-                                    <div className="text-center py-8">
-                                        <History className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                                        <p className="text-gray-500">No activity logs found for this user.</p>
+                                    <div className="text-center py-12">
+                                        <div className="w-24 h-24 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                                            <History className="w-12 h-12 text-purple-400" />
+                                        </div>
+                                        <h4 className="text-xl font-semibold text-gray-900 mb-2">No Activity Logs</h4>
+                                        <p className="text-gray-500 max-w-md mx-auto">
+                                            No activity logs found for this user. Activity logs will appear here when actions are performed on this account.
+                                        </p>
                                     </div>
                                 ) : (
-                                    <div className="max-h-96 overflow-y-auto">
-                                        <div className="space-y-4">
-                                            {selectedUserLogs.map((log) => (
-                                                <div key={log.id} className="border border-gray-200 rounded-lg p-4">
-                                                    <div className="flex items-start justify-between">
-                                                        <div className="flex items-center space-x-3">
-                                                            {getActionIcon(log.action_type)}
-                                                            <div>
-                                                                <h4 className="font-medium text-gray-900">
-                                                                    {getActionLabel(log.action_type)}
-                                                                </h4>
-                                                                <p className="text-sm text-gray-500">
-                                                                    {new Date(log.created_at).toLocaleString()}
-                                                                </p>
-                                                            </div>
-                                                        </div>
+                                    <div className="space-y-6">
+                                        {/* Summary Stats */}
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-blue-100 rounded-lg">
+                                                        <Activity className="w-5 h-5 text-blue-600" />
                                                     </div>
+                                                    <div>
+                                                        <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide">Total Actions</p>
+                                                        <p className="text-2xl font-bold text-blue-900">{selectedUserLogs.length}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-green-100 rounded-lg">
+                                                        <Clock className="w-5 h-5 text-green-600" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs font-semibold text-green-600 uppercase tracking-wide">Latest Activity</p>
+                                                        <p className="text-sm font-bold text-green-900">
+                                                            {selectedUserLogs.length > 0 ? new Date(selectedUserLogs[0].created_at).toLocaleDateString() : 'N/A'}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-200">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-purple-100 rounded-lg">
+                                                        <User className="w-5 h-5 text-purple-600" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs font-semibold text-purple-600 uppercase tracking-wide">User Status</p>
+                                                        <p className="text-sm font-bold text-purple-900">{selectedUser.status}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
 
-                                                    <div className="mt-3 space-y-2">
-                                                        {log.previous_status && log.new_status && (
-                                                            <div className="flex items-center space-x-2 text-sm">
-                                                                <span className="text-gray-500">Status:</span>
-                                                                <span className={`px-2 py-1 rounded text-xs ${getStatusColor(log.previous_status)}`}>
-                                                                    {log.previous_status}
-                                                                </span>
-                                                                <span className="text-gray-400">→</span>
-                                                                <span className={`px-2 py-1 rounded text-xs ${getStatusColor(log.new_status)}`}>
-                                                                    {log.new_status}
-                                                                </span>
-                                                            </div>
-                                                        )}
+                                        {/* Activity Timeline */}
+                                        <div className="max-h-96 overflow-y-auto space-y-4">
+                                            {selectedUserLogs.map((log, index) => (
+                                                <div key={log.id} className="relative">
+                                                    {/* Timeline Connector */}
+                                                    {index < selectedUserLogs.length - 1 && (
+                                                        <div className="absolute left-6 top-12 w-0.5 h-8 bg-gradient-to-b from-purple-200 to-pink-200"></div>
+                                                    )}
 
-                                                        {log.previous_role && log.new_role && (
-                                                            <div className="flex items-center space-x-2 text-sm">
-                                                                <span className="text-gray-500">Role:</span>
-                                                                <span className={`px-2 py-1 rounded text-xs ${getRoleColor(log.previous_role)}`}>
-                                                                    {log.previous_role}
-                                                                </span>
-                                                                <span className="text-gray-400">→</span>
-                                                                <span className={`px-2 py-1 rounded text-xs ${getRoleColor(log.new_role)}`}>
-                                                                    {log.new_role}
-                                                                </span>
-                                                            </div>
-                                                        )}
-
-                                                        {log.reason && (
-                                                            <div className="text-sm">
-                                                                <span className="text-gray-500">Reason:</span>
-                                                                <p className="text-gray-700 mt-1 bg-gray-50 p-2 rounded">
-                                                                    {log.reason}
-                                                                </p>
-                                                            </div>
-                                                        )}
-
-                                                        {log.hold_days && (
-                                                            <div className="text-sm">
-                                                                <span className="text-gray-500">Hold Duration:</span>
-                                                                <span className="text-gray-700 ml-2">{log.hold_days} day(s)</span>
-                                                            </div>
-                                                        )}
-
-                                                        {log.hold_start_date && log.hold_end_date && (
-                                                            <div className="text-sm space-y-1">
+                                                    <div className="relative bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300">
+                                                        {/* Action Header */}
+                                                        <div className="flex items-start justify-between mb-4">
+                                                            <div className="flex items-center space-x-4">
+                                                                <div className="relative">
+                                                                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center shadow-sm">
+                                                                        {getActionIcon(log.action_type)}
+                                                                    </div>
+                                                                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-purple-500 rounded-full border-2 border-white"></div>
+                                                                </div>
                                                                 <div>
-                                                                    <span className="text-gray-500">Hold Period:</span>
-                                                                    <span className="text-gray-700 ml-2">
-                                                                        {new Date(log.hold_start_date).toLocaleString()} - {new Date(log.hold_end_date).toLocaleString()}
-                                                                    </span>
+                                                                    <h4 className="text-lg font-bold text-gray-900">
+                                                                        {getActionLabel(log.action_type)}
+                                                                    </h4>
+                                                                    <p className="text-sm text-gray-500 font-medium">
+                                                                        {new Date(log.created_at).toLocaleString()}
+                                                                    </p>
                                                                 </div>
                                                             </div>
-                                                        )}
+                                                            <Badge className="bg-purple-100 text-purple-700 text-xs font-semibold px-3 py-1">
+                                                                #{selectedUserLogs.length - index}
+                                                            </Badge>
+                                                        </div>
 
-                                                        {log.admin_comment && (
-                                                            <div className="text-sm">
-                                                                <span className="text-gray-500">Admin Comment:</span>
-                                                                <p className="text-gray-700 mt-1 bg-blue-50 p-2 rounded">
-                                                                    {log.admin_comment}
-                                                                </p>
-                                                            </div>
-                                                        )}
+                                                        {/* Action Details */}
+                                                        <div className="space-y-4">
+                                                            {/* Status Changes */}
+                                                            {log.previous_status && log.new_status && (
+                                                                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">
+                                                                    <div className="flex items-center gap-2 mb-2">
+                                                                        <Activity className="w-4 h-4 text-blue-600" />
+                                                                        <span className="text-sm font-semibold text-blue-700">Status Change</span>
+                                                                    </div>
+                                                                    <div className="flex items-center space-x-3">
+                                                                        <Badge className={`${getStatusColor(log.previous_status)} text-xs font-bold px-3 py-1`}>
+                                                                            {log.previous_status}
+                                                                        </Badge>
+                                                                        <div className="flex items-center space-x-1">
+                                                                            <div className="w-8 h-0.5 bg-gray-300"></div>
+                                                                            <ArrowRight className="w-4 h-4 text-gray-400" />
+                                                                            <div className="w-8 h-0.5 bg-gray-300"></div>
+                                                                        </div>
+                                                                        <Badge className={`${getStatusColor(log.new_status)} text-xs font-bold px-3 py-1`}>
+                                                                            {log.new_status}
+                                                                        </Badge>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+
+                                                            {/* Role Changes */}
+                                                            {log.previous_role && log.new_role && (
+                                                                <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-200">
+                                                                    <div className="flex items-center gap-2 mb-2">
+                                                                        <Shield className="w-4 h-4 text-purple-600" />
+                                                                        <span className="text-sm font-semibold text-purple-700">Role Change</span>
+                                                                    </div>
+                                                                    <div className="flex items-center space-x-3">
+                                                                        <Badge className={`${getRoleColor(log.previous_role)} text-xs font-bold px-3 py-1`}>
+                                                                            {getRoleLabel(log.previous_role)}
+                                                                        </Badge>
+                                                                        <div className="flex items-center space-x-1">
+                                                                            <div className="w-8 h-0.5 bg-gray-300"></div>
+                                                                            <ArrowRight className="w-4 h-4 text-gray-400" />
+                                                                            <div className="w-8 h-0.5 bg-gray-300"></div>
+                                                                        </div>
+                                                                        <Badge className={`${getRoleColor(log.new_role)} text-xs font-bold px-3 py-1`}>
+                                                                            {getRoleLabel(log.new_role)}
+                                                                        </Badge>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+
+                                                            {/* Reason */}
+                                                            {log.reason && (
+                                                                <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-4 rounded-xl border border-amber-200">
+                                                                    <div className="flex items-center gap-2 mb-2">
+                                                                        <AlertTriangle className="w-4 h-4 text-amber-600" />
+                                                                        <span className="text-sm font-semibold text-amber-700">Reason</span>
+                                                                    </div>
+                                                                    <p className="text-sm text-amber-800 font-medium">
+                                                                        {log.reason}
+                                                                    </p>
+                                                                </div>
+                                                            )}
+
+                                                            {/* Hold Information */}
+                                                            {log.hold_days && (
+                                                                <div className="bg-gradient-to-r from-orange-50 to-red-50 p-4 rounded-xl border border-orange-200">
+                                                                    <div className="flex items-center gap-2 mb-2">
+                                                                        <Clock className="w-4 h-4 text-orange-600" />
+                                                                        <span className="text-sm font-semibold text-orange-700">Hold Duration</span>
+                                                                    </div>
+                                                                    <p className="text-sm text-orange-800 font-medium">
+                                                                        {log.hold_days} day(s)
+                                                                    </p>
+                                                                </div>
+                                                            )}
+
+                                                            {/* Hold Period */}
+                                                            {log.hold_start_date && log.hold_end_date && (
+                                                                <div className="bg-gradient-to-r from-red-50 to-pink-50 p-4 rounded-xl border border-red-200">
+                                                                    <div className="flex items-center gap-2 mb-2">
+                                                                        <Calendar className="w-4 h-4 text-red-600" />
+                                                                        <span className="text-sm font-semibold text-red-700">Hold Period</span>
+                                                                    </div>
+                                                                    <div className="text-sm text-red-800 font-medium">
+                                                                        <p>From: {new Date(log.hold_start_date).toLocaleString()}</p>
+                                                                        <p>To: {new Date(log.hold_end_date).toLocaleString()}</p>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+
+                                                            {/* Admin Comment */}
+                                                            {log.admin_comment && (
+                                                                <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-4 rounded-xl border border-indigo-200">
+                                                                    <div className="flex items-center gap-2 mb-2">
+                                                                        <User className="w-4 h-4 text-indigo-600" />
+                                                                        <span className="text-sm font-semibold text-indigo-700">Admin Comment</span>
+                                                                    </div>
+                                                                    <p className="text-sm text-indigo-800 font-medium">
+                                                                        {log.admin_comment}
+                                                                    </p>
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ))}

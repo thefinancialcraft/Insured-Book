@@ -18,6 +18,7 @@ import Registration from "./pages/Registration";
 import CallManagementPage from "./pages/CallManagementPage";
 import CallPage from "./pages/CallPage";
 import NotFound from "./pages/NotFound";
+import UserDetails from "./pages/UserDetails";
 
 function App() {
   return (
@@ -94,6 +95,15 @@ function App() {
             element={
               <AuthGuard>
                 <AdminPanel />
+              </AuthGuard>
+            }
+          />
+
+          <Route
+            path="/profile"
+            element={
+              <AuthGuard>
+                <UserDetails />
               </AuthGuard>
             }
           />

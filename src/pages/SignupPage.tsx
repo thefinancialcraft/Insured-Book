@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Mail, CheckCircle } from "lucide-react";
+import { Mail, CheckCircle, Loader2 } from "lucide-react";
 
 const SignupPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -11,9 +11,10 @@ const SignupPage: React.FC = () => {
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
-  const { signUp } = useAuth();
+  const { signUp, signInWithGoogle } = useAuth();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -75,6 +76,27 @@ const SignupPage: React.FC = () => {
           <h2 className="text-2xl font-semibold text-gray-800 mb-1 tracking-tight">Create Account</h2>
           <p className="text-gray-400 text-sm">Join Insured Book today</p>
         </div>
+
+        {/* Google Sign Up Button */}
+        {!success && (
+          <button
+            type="button"
+            onClick={async () => {
+              setGoogleLoading(true);
+              setError("");
+              const { error } = await signInWithGoogle();
+              setGoogleLoading(false);
+              if (error) setError(error.message || "Google sign up failed. Please try again.");
+            }}
+            className="w-full flex items-center justify-center gap-2 py-2 mb-4 bg-white border border-gray-200 rounded-md shadow-sm hover:bg-gray-50 transition text-base font-medium text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={googleLoading || loading}
+          >
+            {googleLoading ? <Loader2 className="animate-spin w-5 h-5" /> : (
+              <svg className="w-5 h-5" viewBox="0 0 48 48"><g><circle fill="#fff" cx="24" cy="24" r="24" /><path fill="#4285F4" d="M35.3 24.2c0-.7-.1-1.4-.2-2H24v4.1h6.4c-.3 1.4-1.3 2.6-2.7 3.4v2.8h4.4c2.6-2.4 4.2-5.9 4.2-10.3z" /><path fill="#34A853" d="M24 36c3.6 0 6.6-1.2 8.8-3.2l-4.4-2.8c-1.2.8-2.7 1.3-4.4 1.3-3.4 0-6.2-2.3-7.2-5.3h-4.5v3.3C15.2 33.8 19.3 36 24 36z" /><path fill="#FBBC05" d="M16.8 26c-.3-.8-.5-1.6-.5-2.5s.2-1.7.5-2.5v-3.3h-4.5C11.3 20.2 11 22.1 11 24s.3 3.8.8 5.3l4.5-3.3z" /><path fill="#EA4335" d="M24 17.7c1.9 0 3.6.6 4.9 1.7l3.7-3.7C30.6 13.8 27.6 12.5 24 12.5c-4.7 0-8.8 2.2-11.3 5.7l4.5 3.3c1-3 3.8-5.3 7.2-5.3z" /></g></svg>
+            )}
+            {googleLoading ? "Signing up..." : "Sign up with Google"}
+          </button>
+        )}
 
         {success ? (
           <div className="text-center space-y-6">

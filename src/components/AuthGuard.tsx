@@ -4,12 +4,73 @@ import { useProfileCompletion } from "@/hooks/useProfileCompletion";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const AuthGuard = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
+  const { user, loading, checkUserExists, signOut } = useAuth();
   const { profile, needsProfileCompletion, needsApproval, isApproved, loading: profileLoading } = useProfileCompletion();
   const navigate = useNavigate();
   const location = useLocation();
   const [isInitialized, setIsInitialized] = useState(false);
   const lastRedirectPath = useRef<string | null>(null);
+  const [userExistenceChecked, setUserExistenceChecked] = useState(false);
+
+  // Check if logged-in user still exists in database (for deleted users)
+  useEffect(() => {
+    const checkDeletedUser = async () => {
+      if (loading || profileLoading || !user) {
+        return;
+      }
+
+      console.log("=== CHECKING USER EXISTENCE ===");
+      console.log("User ID:", user.id);
+
+      try {
+        const userExists = await checkUserExists(user.id);
+
+        if (!userExists) {
+          console.log("User has been deleted, signing out and redirecting to login");
+          await signOut();
+          navigate('/login', {
+            replace: true,
+            state: {
+              message: 'Your account has been deleted. Please contact an administrator if you believe this is an error.'
+            }
+          });
+          return;
+        }
+
+        console.log("User exists in database, continuing...");
+        setUserExistenceChecked(true);
+      } catch (error) {
+        console.error("Error checking user existence:", error);
+        setUserExistenceChecked(true);
+      }
+    };
+
+    checkDeletedUser();
+
+    // Set up periodic check every 30 seconds for active users
+    if (user && !loading && !profileLoading) {
+      const interval = setInterval(async () => {
+        try {
+          const userExists = await checkUserExists(user.id);
+          if (!userExists) {
+            console.log("Periodic check: User has been deleted, signing out");
+            await signOut();
+            navigate('/login', {
+              replace: true,
+              state: {
+                message: 'Your account has been deleted. Please contact an administrator if you believe this is an error.'
+              }
+            });
+            clearInterval(interval);
+          }
+        } catch (error) {
+          console.error("Error in periodic user existence check:", error);
+        }
+      }, 30000); // Check every 30 seconds
+
+      return () => clearInterval(interval);
+    }
+  }, [user, loading, profileLoading, checkUserExists, signOut, navigate]);
 
   useEffect(() => {
     // Wait for both auth and profile to be loaded
@@ -20,6 +81,11 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
     // Mark as initialized after first load
     if (!isInitialized) {
       setIsInitialized(true);
+      return;
+    }
+
+    // Skip other checks if user existence hasn't been verified yet
+    if (user && !userExistenceChecked) {
       return;
     }
 
@@ -175,7 +241,11 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+    </>
+  );
 };
 
 export default AuthGuard; 

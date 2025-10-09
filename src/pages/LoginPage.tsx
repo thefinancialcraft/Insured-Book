@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Eye, EyeOff, Mail, Lock, AlertCircle, Loader2 } from "lucide-react";
 
 const LoginPage = () => {
   const { signIn } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -14,6 +15,15 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Check for deletion message from navigation state
+  useEffect(() => {
+    if (location.state?.message) {
+      setError(location.state.message);
+      // Clear the state to prevent the message from showing again on refresh
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, navigate, location.pathname]);
 
   // Test Supabase connection on mount
   useEffect(() => {
@@ -118,7 +128,7 @@ const LoginPage = () => {
           name: authError.name
         });
 
-        // Provide more specific error messages
+        // Provide specific error messages for different scenarios
         if (authError.message?.includes("Invalid login credentials")) {
           setError("Invalid email or password. Please check your credentials.");
         } else if (authError.message?.includes("Email not confirmed")) {
@@ -464,6 +474,11 @@ const LoginPage = () => {
                 Sign up
               </Link>
             </p>
+            <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-md">
+              <p className="text-xs text-green-700">
+                <strong>Flexible Login:</strong> You can login with email/password or use Google sign-in. Both methods work for your account.
+              </p>
+            </div>
             <button
               type="button"
               onClick={checkAllUsers}

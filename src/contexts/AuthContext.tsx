@@ -10,6 +10,7 @@ interface AuthContextType {
   signUp: (email: string, password: string) => Promise<{ error: any }>
   signInWithGoogle: () => Promise<{ error: any }>
   signOut: () => Promise<void>
+  checkUserExists: (userId: string) => Promise<boolean>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -103,6 +104,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     await supabase.auth.signOut()
   }
 
+  const checkUserExists = async (userId: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('id')
+        .eq('user_id', userId)
+        .single()
+
+      if (error) {
+        console.log('User existence check failed:', error.message)
+        return false
+      }
+
+      return !!data
+    } catch (error) {
+      console.log('User existence check error:', error)
+      return false
+    }
+  }
+
   const value = {
     user,
     session,
@@ -111,6 +132,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     signUp,
     signInWithGoogle,
     signOut,
+    checkUserExists,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

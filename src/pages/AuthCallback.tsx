@@ -112,10 +112,28 @@ const AuthCallback = () => {
           return;
         }
 
-        // If user has no profile, redirect to profile completion
+        // If user has no profile, create one and redirect to profile completion
         if (!profile) {
-          console.log('No profile found, redirecting to profile completion');
-          updateDebugStep('profile', 'completed', 'No profile found - new user');
+          console.log('No profile found, creating user profile for Google signup...');
+          // Try to create user_profiles row
+          try {
+            await supabase.from('user_profiles').insert({
+              user_id: user.id,
+              user_name: user.user_metadata?.full_name || user.email,
+              email: user.email,
+              role: 'employee',
+              approval_status: 'pending',
+              status: 'active',
+            });
+            console.log('User profile created for Google signup.');
+          } catch (insertError) {
+            console.error('Error creating user profile for Google signup:', insertError);
+            updateDebugStep('profile', 'error', 'Failed to create user profile for Google signup');
+            setError('Failed to create user profile. Please contact support.');
+            setLoading(false);
+            return;
+          }
+          updateDebugStep('profile', 'completed', 'User profile created for Google signup');
           updateDebugStep('redirect', 'loading', 'Redirecting to profile completion...');
           navigate('/profile-completion', { replace: true });
           return;

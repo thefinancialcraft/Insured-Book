@@ -55,20 +55,65 @@ export const useProfileCompletion = () => {
 
     try {
       console.log("Fetching profile for user:", user.id);
-      const { data, error } = await supabase
+
+      // Try direct query first
+      const { data: directData, error: directError } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
-      console.log("Profile fetch result:", { data, error });
+      if (directData && !directError) {
+        console.log("Profile found directly:", directData);
 
-      if (data && !error) {
-        console.log("Profile found:", data);
-        setProfile(data);
+        // Update user_id if it doesn't match
+        if (directData.user_id !== user.id) {
+          console.log("Updating user_id to match auth user...");
+          const { error: updateError } = await supabase
+            .from('user_profiles')
+            .update({ user_id: user.id })
+            .eq('id', directData.id);
+
+          if (updateError) {
+            console.error("Error updating user_id:", updateError);
+          } else {
+            directData.user_id = user.id;
+          }
+        }
+        setProfile(directData);
       } else {
-        console.log("No profile found or error:", error);
-        setProfile(null);
+        console.log("Direct fetch result:", { directData, directError });
+
+        // Try alternative query by email
+        const { data: emailData, error: emailError } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('email', user.email)
+          .maybeSingle();
+
+        console.log("Email fetch result:", { emailData, emailError });
+
+        if (emailData && !emailError) {
+          console.log("Profile found by email:", emailData);
+
+          // Update user_id to match auth user
+          console.log("Updating user_id to match auth user...");
+          const { error: updateError } = await supabase
+            .from('user_profiles')
+            .update({ user_id: user.id })
+            .eq('id', emailData.id);
+
+          if (updateError) {
+            console.error("Error updating user_id:", updateError);
+          } else {
+            emailData.user_id = user.id;
+          }
+
+          setProfile(emailData);
+        } else {
+          console.log("No profile found");
+          setProfile(null);
+        }
       }
     } catch (error) {
       console.error("Profile fetch error:", error);

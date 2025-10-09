@@ -17,6 +17,7 @@
 
 ## 🎯 Overview
 
+
 The Insured Book application is a comprehensive user management system with role-based access control, approval workflows, and detailed activity logging. It features a modern React frontend with Supabase backend integration.
 
 ### Key Features:

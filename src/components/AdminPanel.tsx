@@ -39,6 +39,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useToast } from "@/components/ui/use-toast";
+import { Toaster } from "@/components/ui/toaster";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -99,18 +101,21 @@ interface UserActivityLog {
 const AdminPanel = () => {
     const { user, signOut } = useAuth();
     const navigate = useNavigate();
+    const { toast } = useToast();
     const [users, setUsers] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
     const [showModal, setShowModal] = useState(false);
     const [currentAdmin, setCurrentAdmin] = useState<UserProfile | null>(null);
+    const [showApprovalModal, setShowApprovalModal] = useState(false);
+    const [approvalReason, setApprovalReason] = useState("");
+    const [selectedRole, setSelectedRole] = useState<string>("employee"); // Default role
     const [reason, setReason] = useState("");
     const [showReasonModal, setShowReasonModal] = useState(false);
     const [actionType, setActionType] = useState<'reject' | 'hold' | 'suspend' | null>(null);
     const [targetUserId, setTargetUserId] = useState<string | null>(null);
     const [showDetails, setShowDetails] = useState(false);
-    const [selectedRole, setSelectedRole] = useState<string>("");
     const [showRoleModal, setShowRoleModal] = useState(false);
     const [userToUpdateRole, setUserToUpdateRole] = useState<UserProfile | null>(null);
 
@@ -152,6 +157,15 @@ const AdminPanel = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const [roleFilter, setRoleFilter] = useState<string>("all");
+
+    // Add state for editing employee_id
+    const [editingEmployeeId, setEditingEmployeeId] = useState(false);
+    const [newEmployeeId, setNewEmployeeId] = useState("");
+    const [employeeIdError, setEmployeeIdError] = useState("");
+
+    // Add state for approval modal employee_id
+    const [approvalEmployeeId, setApprovalEmployeeId] = useState("");
+    const [approvalEmployeeIdError, setApprovalEmployeeIdError] = useState("");
 
     useEffect(() => {
         fetchUsers();
@@ -257,6 +271,213 @@ const AdminPanel = () => {
         }
     };
 
+    const generateEmployeeId = async () => {
+        // Fetch all employee_ids in TFC-000 to TFC-999 format
+        const { data: employees, error } = await supabase
+            .from('user_profiles')
+            .select('employee_id')
+            .not('employee_id', 'is', null);
+
+        if (error) {
+            // fallback: return TFC-001
+            return 'TFC-001';
+        }
+
+        // Filter only valid TFC-000 to TFC-999 IDs and extract numeric part
+        const numbers = (employees || [])
+            .map(emp => {
+                const match = emp.employee_id && emp.employee_id.match(/^TFC-(\d{3})$/);
+                return match ? parseInt(match[1]) : null;
+            })
+            .filter(num => num !== null);
+
+        let next = 0;
+        if (numbers.length > 0) {
+            next = Math.max(...numbers) + 1;
+            if (next > 999) next = 1;
+        }
+        const padded = next.toString().padStart(3, '0');
+        return `TFC-${padded}`;
+    };
+
+    const handleApprove = async (employeeIdOverride?: string) => {
+        if (!selectedUser || !selectedRole) {
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Please select a role for the user.",
+            });
+            return;
+        }
+
+        try {
+            console.log("Starting approval process for user:", selectedUser);
+
+            const employeeId = selectedRole === 'employee' ? (employeeIdOverride || await generateEmployeeId()) : null;
+            const joiningDate = new Date().toISOString();
+            const currentDate = new Date().toISOString();
+
+            // Get current admin user
+            const { data: { user: currentAdmin }, error: authError } = await supabase.auth.getUser();
+
+            if (authError) {
+                console.error("Auth error:", authError);
+                throw new Error("Failed to get admin user details");
+            }
+
+            if (!currentAdmin) {
+                throw new Error("No admin user found");
+            }
+
+            console.log("Updating user profile with:", {
+                userId: selectedUser.user_id,
+                role: selectedRole,
+                employeeId,
+                joiningDate,
+                adminId: currentAdmin.id
+            });
+
+            console.log("Attempting to update user profile with ID:", selectedUser.user_id);
+
+            const updatePayload = {
+                role: selectedRole,
+                approval_status: 'approved',
+                status: 'active',
+                employee_id: employeeId,
+                joining_date: joiningDate,
+                status_reason: approvalReason || 'User approved by admin'
+            };
+
+            console.log("Update payload:", updatePayload);
+
+            // Double check if the profile exists before update
+            const { data: existingProfile, error: profileCheckError } = await supabase
+                .from('user_profiles')
+                .select('*')
+                .eq('id', selectedUser.id)
+                .single();
+
+            if (profileCheckError) {
+                console.error("Profile check error:", profileCheckError);
+                throw new Error(`Failed to find user profile: ${profileCheckError.message}`);
+            }
+
+            if (!existingProfile) {
+                console.error("Profile not found for ID:", selectedUser.id);
+                throw new Error("User profile not found");
+            }
+
+            console.log("Found existing profile:", existingProfile);
+
+            // Update user profile
+            const { data: updateData, error: updateError } = await supabase
+                .from('user_profiles')
+                .update(updatePayload)
+                .match({ id: selectedUser.id }) // Using match instead of eq
+                .select('*');
+
+            if (updateError) {
+                console.error("Update error:", updateError);
+                throw new Error(`Failed to update user profile: ${updateError.message}`);
+            }
+
+            // Verify the update by fetching the latest data
+            const { data: verifyData, error: verifyError } = await supabase
+                .from('user_profiles')
+                .select('*')
+                .eq('id', selectedUser.id) // Using id instead of user_id
+                .single();
+
+            if (verifyError) {
+                console.error("Verification error:", verifyError);
+                throw new Error(`Failed to verify update: ${verifyError.message}`);
+            }
+
+            if (!verifyData) {
+                throw new Error("Failed to verify user profile update");
+            }
+
+            // Compare the verification data with what we expected
+            const expectedChanges = {
+                role: selectedRole,
+                approval_status: 'approved',
+                status: 'active',
+                employee_id: employeeId
+            };
+
+            const hasAllChanges = Object.entries(expectedChanges).every(
+                ([key, value]) => verifyData[key] === value
+            );
+
+            if (!hasAllChanges) {
+                console.error("Update verification failed. Expected vs Actual:", {
+                    expected: expectedChanges,
+                    actual: verifyData
+                });
+                throw new Error("Profile update did not apply all changes");
+            }
+
+            console.log("Update successful and verified:", verifyData);
+
+            // Log activity
+            const { error: logError } = await supabase
+                .from('user_activity_logs')
+                .insert([
+                    {
+                        user_id: selectedUser.user_id,
+                        admin_user_id: currentAdmin.id,
+                        action_type: 'approval_accepted',
+                        previous_status: 'pending',
+                        new_status: 'active',
+                        previous_role: null,
+                        new_role: selectedRole,
+                        reason: approvalReason,
+                        admin_comment: `Approved with role ${selectedRole} and employee ID ${employeeId}`
+                    }
+                ]);
+
+            if (logError) {
+                console.error("Log error:", logError);
+                throw logError;
+            }
+
+            // Add notification and play sound
+            const notification = {
+                id: Date.now().toString(),
+                message: `User ${selectedUser.user_name} has been approved as ${selectedRole} with ID ${employeeId}`,
+                type: 'user_updated' as const,
+                timestamp: new Date()
+            };
+            setNotifications(prev => [notification, ...prev.slice(0, 4)]);
+
+            if (soundEnabled) {
+                playNotificationSound();
+            }
+
+            // Refresh users list
+            await fetchUsers();
+
+            toast({
+                title: "User Approved Successfully",
+                description: `User has been approved with role: ${selectedRole} and Employee ID: ${employeeId}`,
+            });
+
+            // Close modal and reset states
+            setShowApprovalModal(false);
+            setSelectedUser(null);
+            setSelectedRole('');
+            setApprovalReason('');
+
+        } catch (error) {
+            console.error('Error approving user:', error);
+            toast({
+                variant: "destructive",
+                title: "Error approving user",
+                description: error.message || "Please try again later."
+            });
+        }
+    };
+
     const fetchCurrentAdmin = async () => {
         if (!user) return;
 
@@ -325,30 +546,21 @@ const AdminPanel = () => {
         }
     };
 
+    const openApprovalModal = (user: UserProfile) => {
+        setSelectedUser(user);
+        setShowApprovalModal(true);
+        setSelectedRole("employee"); // Reset to default role
+        setApprovalReason(""); // Clear any previous reason
+    };
+
     const approveUser = async (userId: string) => {
         try {
-            console.log("Approving user:", userId);
-
-            // Admin tracking is now handled automatically by database trigger using auth.uid()
-
-            const { error } = await supabase
-                .from('user_profiles')
-                .update({
-                    approval_status: 'approved',
-                    status: 'active',
-                    employee_id: `EMP${Date.now()}`,
-                    joining_date: new Date().toISOString().split('T')[0]
-                })
-                .eq('user_id', userId);
-
-            if (error) {
-                console.error("Supabase error:", error);
-                setError(`Failed to approve user: ${error.message}`);
+            // Open the approval modal to get role information
+            const userToApprove = users.find(u => u.user_id === userId);
+            if (userToApprove) {
+                openApprovalModal(userToApprove);
             } else {
-                console.log("User approved successfully");
-                // Note: Activity logging is handled automatically by database trigger
-                setError("");
-                fetchUsers(); // Refresh the list
+                setError("User not found");
             }
         } catch (error) {
             console.error("Error in approveUser:", error);
@@ -387,7 +599,28 @@ const AdminPanel = () => {
 
     const holdUser = async (userId: string, days?: number, customEndDate?: string) => {
         try {
-            // Admin tracking is now handled automatically by database trigger using auth.uid()
+            console.log('Attempting to hold user:', userId);
+
+            // First get the complete user profile
+            const { data: userProfile, error: fetchError } = await supabase
+                .from('user_profiles')
+                .select('*')
+                .eq('user_id', userId)
+                .single();
+
+            if (fetchError) {
+                console.error('Error finding user profile:', fetchError);
+                setError(`Failed to find user profile: ${fetchError.message}`);
+                return;
+            }
+
+            if (!userProfile) {
+                console.error('No user profile found for user_id:', userId);
+                setError("User profile not found");
+                return;
+            }
+
+            console.log('Found user profile:', userProfile);
 
             let holdEndDate: string;
             let holdDays: number;
@@ -406,40 +639,83 @@ const AdminPanel = () => {
                 holdEndDate = endDate.toISOString();
             }
 
-            const { error } = await supabase
-                .from('user_profiles')
-                .update({
-                    status: 'hold',
-                    hold_days: holdDays,
-                    hold_start_date: new Date().toISOString(),
-                    hold_end_date: holdEndDate,
-                    status_reason: reason
-                })
-                .eq('user_id', userId);
+            const updatePayload = {
+                status: 'hold',
+                hold_days: holdDays,
+                hold_start_date: new Date().toISOString(),
+                hold_end_date: holdEndDate,
+                status_reason: reason || `User put on hold for ${holdDays} day(s)`
+            };
 
-            if (error) {
-                setError("Failed to put user on hold.");
-            } else {
-                console.log("User put on hold successfully");
-                // Note: Activity logging is handled automatically by database trigger
-                setError("");
-                setReason("");
-                setShowReasonModal(false);
-                setActionType(null);
-                setTargetUserId(null);
-                setHoldOption('1');
-                setCustomHoldDate(undefined);
-                setCustomHoldTime("");
-                fetchUsers(); // Refresh the list
+            console.log('Updating user profile:', {
+                profileId: userProfile.id,
+                payload: updatePayload
+            });
+
+            // Try updating the profile
+            const { data: updateData, error: updateError } = await supabase
+                .from('user_profiles')
+                .update(updatePayload)
+                .eq('id', userProfile.id) // Use the primary key 'id'
+                .select('*');
+
+            if (updateError) {
+                console.error('Error updating user profile:', updateError);
+                setError(`Failed to put user on hold: ${updateError.message}`);
+                return;
             }
+
+            if (!updateData || updateData.length === 0) {
+                console.error('Update succeeded but no data returned');
+                setError("Update failed - no data returned");
+                return;
+            }
+
+            console.log("User put on hold successfully:", updateData[0]);
+
+            // Note: Activity logging is handled automatically by database trigger
+            setError("");
+            setReason("");
+            setShowReasonModal(false);
+            setActionType(null);
+            setTargetUserId(null);
+            setHoldOption('1');
+            setCustomHoldDate(undefined);
+            setCustomHoldTime("");
+
+            // Show success message
+            toast({
+                title: "Success",
+                description: `User has been put on hold for ${holdDays} day(s)`,
+            });
+
+            // Refresh the users list
+            await fetchUsers();
+
         } catch (error) {
-            setError("An error occurred while putting user on hold.");
+            console.error('Unexpected error in holdUser:', error);
+            setError(`An unexpected error occurred: ${error.message}`);
         }
     };
 
     const suspendUser = async (userId: string) => {
         try {
-            // Admin tracking is now handled automatically by database trigger using auth.uid()
+            console.log('Attempting to suspend user:', userId);
+
+            // First verify the user exists
+            const { data: userProfile, error: fetchError } = await supabase
+                .from('user_profiles')
+                .select('id')
+                .eq('user_id', userId)
+                .single();
+
+            if (fetchError || !userProfile) {
+                console.error('Error finding user profile:', fetchError);
+                setError("User profile not found");
+                return;
+            }
+
+            console.log('Suspending user profile:', userProfile.id);
 
             const { error } = await supabase
                 .from('user_profiles')
@@ -451,7 +727,7 @@ const AdminPanel = () => {
                     hold_end_date: null,
                     status_reason: reason
                 })
-                .eq('user_id', userId);
+                .eq('id', userProfile.id);
 
             if (error) {
                 setError("Failed to suspend user.");
@@ -546,30 +822,31 @@ const AdminPanel = () => {
                 });
             }
 
-            // Use the SQL function to delete both profile and auth entry together
-            const { data, error } = await supabase.rpc('delete_user_with_auth', {
+            // Delete user completely (profile + auth) using the comprehensive SQL function
+            const { data: deleteData, error: deleteError } = await supabase.rpc('delete_user_complete_with_auth', {
                 p_user_id: userId,
                 p_admin_user_id: user?.id || null,
                 p_delete_reason: deleteReason
             });
 
-            if (error) {
-                console.error("Error deleting user:", error);
-                setError(`Failed to delete user: ${error.message}`);
+            if (deleteError) {
+                console.error("Error deleting user:", deleteError);
+                setError(`Failed to delete user: ${deleteError.message}`);
                 setDeleting(false);
                 return;
             }
 
-            if (!data) {
-                console.error("User deletion failed - user may not exist or be the last admin");
-                console.log("This could mean:");
-                console.log("1. The user doesn't exist in the database");
-                console.log("2. The user is the last admin user in the system");
-                console.log("3. There's an issue with the SQL function");
-                setError("Failed to delete user. User may not exist or be the last admin user.");
+            // Check if the deletion was successful
+            if (!deleteData || !deleteData.success) {
+                console.error("User deletion failed:", deleteData);
+                const errorMessage = deleteData?.message || "User may not exist or be the last admin user";
+                console.log("Deletion failed with message:", errorMessage);
+                setError(`Failed to delete user: ${errorMessage}`);
                 setDeleting(false);
                 return;
             }
+
+            console.log("User completely deleted successfully:", deleteData);
 
             console.log("User deleted successfully");
             setError("");
@@ -840,6 +1117,19 @@ const AdminPanel = () => {
         return matchesSearch && matchesStatus && matchesRole;
     });
 
+    // When opening approval modal, pre-fill employee_id
+    useEffect(() => {
+        if (showApprovalModal && selectedUser && selectedRole === 'employee') {
+            (async () => {
+                const nextId = await generateEmployeeId();
+                setApprovalEmployeeId(nextId);
+            })();
+        } else if (!showApprovalModal) {
+            setApprovalEmployeeId("");
+            setApprovalEmployeeIdError("");
+        }
+    }, [showApprovalModal, selectedUser, selectedRole]);
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50">
@@ -853,6 +1143,7 @@ const AdminPanel = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+            <Toaster />
             {/* Compact Elegant Header with Glass Effect */}
             <div className="bg-white/90 backdrop-blur-xl border-b border-white/20 sticky top-0 z-40 shadow-lg">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1352,7 +1643,7 @@ const AdminPanel = () => {
                                                             <Button
                                                                 variant="default"
                                                                 size="sm"
-                                                                onClick={() => approveUser(user.user_id)}
+                                                                onClick={() => openApprovalModal(user)}
                                                                 className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white text-xs font-bold py-2 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg"
                                                             >
                                                                 <CheckCircle className="w-4 h-4 mr-2" />
@@ -1664,7 +1955,78 @@ const AdminPanel = () => {
                                             {selectedUser.employee_id && (
                                                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">
                                                     <label className="text-xs font-semibold text-blue-600 uppercase tracking-wide">Employee ID</label>
-                                                    <p className="text-lg font-bold text-blue-900 mt-1">{selectedUser.employee_id}</p>
+                                                    {selectedUser.role === 'employee' && editingEmployeeId ? (
+                                                        <div className="flex items-center gap-2 mt-1">
+                                                            <input
+                                                                type="text"
+                                                                value={newEmployeeId}
+                                                                onChange={e => {
+                                                                    setNewEmployeeId(e.target.value);
+                                                                    setEmployeeIdError("");
+                                                                }}
+                                                                className="border rounded px-2 py-1 text-lg font-bold text-blue-900 w-32"
+                                                                maxLength={7}
+                                                                placeholder="TFC-000"
+                                                            />
+                                                            <button
+                                                                className="bg-green-500 text-white px-2 py-1 rounded text-xs font-semibold"
+                                                                onClick={async () => {
+                                                                    // Validate format: TFC-000 to TFC-999
+                                                                    if (!/^TFC-\d{3}$/.test(newEmployeeId)) {
+                                                                        setEmployeeIdError("ID must be in format TFC-000 to TFC-999");
+                                                                        return;
+                                                                    }
+                                                                    // Check if ID already exists
+                                                                    const { data: existing, error: checkError } = await supabase
+                                                                        .from('user_profiles')
+                                                                        .select('id')
+                                                                        .eq('employee_id', newEmployeeId)
+                                                                        .neq('id', selectedUser.id);
+                                                                    if (checkError) {
+                                                                        setEmployeeIdError("Database error. Try again.");
+                                                                        return;
+                                                                    }
+                                                                    if (existing && existing.length > 0) {
+                                                                        setEmployeeIdError("This Employee ID already exists.");
+                                                                        return;
+                                                                    }
+                                                                    // Save to database
+                                                                    const { error } = await supabase
+                                                                        .from('user_profiles')
+                                                                        .update({ employee_id: newEmployeeId })
+                                                                        .eq('id', selectedUser.id);
+                                                                    if (error) {
+                                                                        setEmployeeIdError("Failed to update ID");
+                                                                    } else {
+                                                                        setEditingEmployeeId(false);
+                                                                        setEmployeeIdError("");
+                                                                        selectedUser.employee_id = newEmployeeId;
+                                                                    }
+                                                                }}
+                                                            >Save</button>
+                                                            <button
+                                                                className="bg-gray-300 text-gray-700 px-2 py-1 rounded text-xs font-semibold"
+                                                                onClick={() => {
+                                                                    setEditingEmployeeId(false);
+                                                                    setEmployeeIdError("");
+                                                                }}
+                                                            >Cancel</button>
+                                                            {employeeIdError && <span className="text-red-500 text-xs ml-2">{employeeIdError}</span>}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex items-center gap-2 mt-1">
+                                                            <p className="text-lg font-bold text-blue-900">{selectedUser.employee_id}</p>
+                                                            {selectedUser.role === 'employee' && (
+                                                                <button
+                                                                    className="ml-2 text-blue-600 hover:text-blue-800 text-xs underline"
+                                                                    onClick={() => {
+                                                                        setEditingEmployeeId(true);
+                                                                        setNewEmployeeId(selectedUser.employee_id || "");
+                                                                    }}
+                                                                >Edit</button>
+                                                            )}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
                                             {selectedUser.joining_date && (
@@ -1736,6 +2098,114 @@ const AdminPanel = () => {
                                         className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
                                     >
                                         Close Details
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Approval Modal */}
+                {showApprovalModal && selectedUser && (
+                    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+                        <div className="relative top-20 mx-auto p-5 border w-[500px] shadow-lg rounded-md bg-white">
+                            <div className="mt-3">
+                                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                    <CheckCircle className="w-5 h-5 text-green-500" />
+                                    Approve User Application
+                                </h3>
+                                <div className="mb-4">
+                                    <p className="text-sm text-gray-600 mb-2">
+                                        Approving user: <strong>{selectedUser.user_name}</strong>
+                                    </p>
+                                    <div className="mt-4">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Select Role *
+                                        </label>
+                                        <select
+                                            value={selectedRole}
+                                            onChange={(e) => setSelectedRole(e.target.value)}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                                        >
+                                            <option value="employee">Employee</option>
+                                            <option value="supervisor">Supervisor</option>
+                                            <option value="manager">Manager</option>
+                                        </select>
+                                    </div>
+                                    {selectedRole === 'employee' && (
+                                        <div className="mt-4">
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Employee ID *
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={approvalEmployeeId}
+                                                onChange={e => {
+                                                    setApprovalEmployeeId(e.target.value);
+                                                    setApprovalEmployeeIdError("");
+                                                }}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-200 text-lg font-bold"
+                                                maxLength={7}
+                                                placeholder="TFC-000"
+                                            />
+                                            {approvalEmployeeIdError && <span className="text-red-500 text-xs ml-2">{approvalEmployeeIdError}</span>}
+                                        </div>
+                                    )}
+                                    <div className="mt-4">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Approval Comments (Optional)
+                                        </label>
+                                        <textarea
+                                            value={approvalReason}
+                                            onChange={(e) => setApprovalReason(e.target.value)}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                                            rows={4}
+                                            placeholder="Add any comments about this approval..."
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex justify-end gap-3 mt-6">
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => {
+                                            setShowApprovalModal(false);
+                                            setSelectedUser(null);
+                                            setSelectedRole("employee");
+                                            setApprovalReason("");
+                                        }}
+                                        className="bg-white hover:bg-gray-50"
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        onClick={async () => {
+                                            // Validate employee_id if role is employee
+                                            if (selectedRole === 'employee') {
+                                                if (!/^TFC-\d{3}$/.test(approvalEmployeeId)) {
+                                                    setApprovalEmployeeIdError("ID must be in format TFC-000 to TFC-999");
+                                                    return;
+                                                }
+                                                // Check uniqueness
+                                                const { data: existing, error: checkError } = await supabase
+                                                    .from('user_profiles')
+                                                    .select('id')
+                                                    .eq('employee_id', approvalEmployeeId)
+                                                    .neq('id', selectedUser.id);
+                                                if (checkError) {
+                                                    setApprovalEmployeeIdError("Database error. Try again.");
+                                                    return;
+                                                }
+                                                if (existing && existing.length > 0) {
+                                                    setApprovalEmployeeIdError("This Employee ID already exists.");
+                                                    return;
+                                                }
+                                            }
+                                            handleApprove(approvalEmployeeId); // pass the ID to handleApprove
+                                        }}
+                                        disabled={!selectedRole}
+                                        className="bg-green-600 hover:bg-green-700 text-white"
+                                    >
+                                        Confirm Approval
                                     </Button>
                                 </div>
                             </div>

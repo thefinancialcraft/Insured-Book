@@ -201,7 +201,7 @@ const SuspendedUser = () => {
 
     // If user is not suspended, redirect to appropriate page
     if (profile.status !== 'suspend') {
-        if (profile.status === 'active' || profile.status === 'approved') {
+        if (profile.status === 'active' || profile.approval_status === 'approved') {
             navigate("/");
             return null;
         } else if (profile.status === 'hold') {

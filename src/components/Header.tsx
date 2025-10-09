@@ -33,6 +33,7 @@ export const Header = () => {
     { name: "Customers", href: "/customers", icon: Users },
     { name: "Call Management", href: "/call-management", icon: Phone },
     { name: "Registration", href: "/registration", icon: FileText },
+    { name: "Profile", href: "/profile", icon: User },
   ];
 
   const isActive = (path: string) => {

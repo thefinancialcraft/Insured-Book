@@ -265,177 +265,180 @@ const ApprovalPending = () => {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-8">
-            <div className="w-full max-w-2xl p-8 bg-white rounded-xl shadow-lg border border-gray-100">
-                <div className="flex flex-col items-center mb-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-50 mb-4">
-                        {getApprovalIcon()}
+        <>
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 py-8">
+                <div className="w-full max-w-2xl p-8 bg-white rounded-xl shadow-lg border border-gray-100">
+                    <div className="flex flex-col items-center mb-8">
+                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-50 mb-4">
+                            {getApprovalIcon()}
+                        </div>
+                        <h2 className="text-2xl font-semibold text-gray-800 mb-2">{getApprovalText()}</h2>
+                        <p className="text-gray-600 text-center max-w-md">{getApprovalDescription()}</p>
                     </div>
-                    <h2 className="text-2xl font-semibold text-gray-800 mb-2">{getApprovalText()}</h2>
-                    <p className="text-gray-600 text-center max-w-md">{getApprovalDescription()}</p>
+
+                    {error && (
+                        <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg mb-6 border border-red-100">
+                            {error}
+                        </div>
+                    )}
+
+                    <div className={`p-4 rounded-lg border ${getApprovalColor()} mb-6`}>
+                        <div className="flex items-center gap-2 mb-3">
+                            {getApprovalIcon()}
+                            <span className="font-medium">{getApprovalText()}</span>
+                        </div>
+
+                        {profile.status === 'hold' && profile.hold_days && (
+                            <div className="space-y-2 text-sm">
+                                <p>• Your account is temporarily on hold</p>
+                                <p>• Hold duration: {profile.hold_days} day(s)</p>
+                                {profile.hold_start_date && (
+                                    <p>• Hold started: {new Date(profile.hold_start_date).toLocaleDateString()}</p>
+                                )}
+                                <p>• Your account will be automatically activated after the hold period</p>
+                            </div>
+                        )}
+
+                        {profile.status === 'suspend' && (
+                            <div className="space-y-2 text-sm">
+                                <p>• Your account has been suspended indefinitely</p>
+                                <p>• Please contact support for assistance</p>
+                                <p>• You cannot access the system until suspension is lifted</p>
+                            </div>
+                        )}
+
+                        {profile.status === 'active' && (
+                            <div className="space-y-2 text-sm">
+                                <p>• Your account is active and fully functional</p>
+                                <p>• You can access all dashboard features</p>
+                                <p>• Welcome to the system!</p>
+                            </div>
+                        )}
+
+                  {profile.approval_status === 'approved' && profile.employee_id && (
+                            <div className="space-y-2 text-sm">
+                                <p><strong>Employee ID:</strong> {profile.employee_id}</p>
+                                <p><strong>Joining Date:</strong> {new Date(profile.joining_date!).toLocaleDateString()}</p>
+                                <p>• You can now access all dashboard features</p>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="bg-gray-50 rounded-lg p-6 mb-6">
+                        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                            <User className="w-5 h-5" />
+                            Profile Details
+                        </h3>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-2">
+                                    <User className="w-4 h-4 text-gray-500" />
+                                    <span className="text-sm font-medium">Name:</span>
+                                    <span className="text-sm text-gray-600">{profile.user_name}</span>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    <Mail className="w-4 h-4 text-gray-500" />
+                                    <span className="text-sm font-medium">Email:</span>
+                                    <span className="text-sm text-gray-600">{profile.email}</span>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    <Briefcase className="w-4 h-4 text-gray-500" />
+                                    <span className="text-sm font-medium">Role:</span>
+                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(profile.role)}`}>
+                                        {getRoleLabel(profile.role)}
+                                    </span>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    <Phone className="w-4 h-4 text-gray-500" />
+                                    <span className="text-sm font-medium">Phone:</span>
+                                    <span className="text-sm text-gray-600">{profile.contact_no}</span>
+                                </div>
+                            </div>
+
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-2">
+                                    <MapPin className="w-4 h-4 text-gray-500" />
+                                    <span className="text-sm font-medium">Location:</span>
+                                    <span className="text-sm text-gray-600">{profile.city}, {profile.state}</span>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    <Calendar className="w-4 h-4 text-gray-500" />
+                                    <span className="text-sm font-medium">DOB:</span>
+                                    <span className="text-sm text-gray-600">{new Date(profile.dob).toLocaleDateString()}</span>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm font-medium">Pincode:</span>
+                                    <span className="text-sm text-gray-600">{profile.pincode}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {profile.approval_status === 'pending' && (
+                        <div className="text-center space-y-4">
+                            <button
+                                onClick={handleBackToLogin}
+                                className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-md transition"
+                            >
+                                Back to Login
+                            </button>
+
+                            <button
+                                onClick={async () => {
+                                    console.log("Manual profile check:");
+                                    const { data, error } = await supabase
+                                        .from('user_profiles')
+                                        .select('*')
+                                        .eq('user_id', user?.id)
+                                        .single();
+                                    console.log("Current profile in database:", { data, error });
+                                }}
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition"
+                            >
+                                Check Profile Status
+                            </button>
+
+                            <p className="text-gray-500 text-sm">
+                                You can check this page again later to see your approval status.
+                            </p>
+                        </div>
+                    )}
+
+                    {profile.approval_status === 'approved' && (
+                        <div className="text-center">
+                            <button
+                                onClick={() => navigate("/")}
+                                className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md transition"
+                            >
+                                Go to Dashboard
+                            </button>
+                        </div>
+                    )}
+
+                    {profile.approval_status === 'rejected' && (
+                        <div className="text-center space-y-4">
+                            <button
+                                onClick={handleBackToLogin}
+                                className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-md transition"
+                            >
+                                Back to Login
+                            </button>
+
+                            <p className="text-gray-500 text-sm">
+                                Your application has been rejected. Please contact support for more information.
+                            </p>
+                        </div>
+                    )}
                 </div>
-
-                {error && (
-                    <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg mb-6 border border-red-100">
-                        {error}
-                    </div>
-                )}
-
-                <div className={`p-4 rounded-lg border ${getApprovalColor()} mb-6`}>
-                    <div className="flex items-center gap-2 mb-3">
-                        {getApprovalIcon()}
-                        <span className="font-medium">{getApprovalText()}</span>
-                    </div>
-
-                    {profile.status === 'hold' && profile.hold_days && (
-                        <div className="space-y-2 text-sm">
-                            <p>• Your account is temporarily on hold</p>
-                            <p>• Hold duration: {profile.hold_days} day(s)</p>
-                            {profile.hold_start_date && (
-                                <p>• Hold started: {new Date(profile.hold_start_date).toLocaleDateString()}</p>
-                            )}
-                            <p>• Your account will be automatically activated after the hold period</p>
-                        </div>
-                    )}
-
-                    {profile.status === 'suspend' && (
-                        <div className="space-y-2 text-sm">
-                            <p>• Your account has been suspended indefinitely</p>
-                            <p>• Please contact support for assistance</p>
-                            <p>• You cannot access the system until suspension is lifted</p>
-                        </div>
-                    )}
-
-                    {profile.status === 'active' && (
-                        <div className="space-y-2 text-sm">
-                            <p>• Your account is active and fully functional</p>
-                            <p>• You can access all dashboard features</p>
-                            <p>• Welcome to the system!</p>
-                        </div>
-                    )}
-
-                    {profile.status === 'approved' && profile.employee_id && (
-                        <div className="space-y-2 text-sm">
-                            <p><strong>Employee ID:</strong> {profile.employee_id}</p>
-                            <p><strong>Joining Date:</strong> {new Date(profile.joining_date!).toLocaleDateString()}</p>
-                            <p>• You can now access all dashboard features</p>
-                        </div>
-                    )}
-                </div>
-
-                <div className="bg-gray-50 rounded-lg p-6 mb-6">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                        <User className="w-5 h-5" />
-                        Profile Details
-                    </h3>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-2">
-                                <User className="w-4 h-4 text-gray-500" />
-                                <span className="text-sm font-medium">Name:</span>
-                                <span className="text-sm text-gray-600">{profile.user_name}</span>
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                                <Mail className="w-4 h-4 text-gray-500" />
-                                <span className="text-sm font-medium">Email:</span>
-                                <span className="text-sm text-gray-600">{profile.email}</span>
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                                <Briefcase className="w-4 h-4 text-gray-500" />
-                                <span className="text-sm font-medium">Role:</span>
-                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(profile.role)}`}>
-                                    {getRoleLabel(profile.role)}
-                                </span>
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                                <Phone className="w-4 h-4 text-gray-500" />
-                                <span className="text-sm font-medium">Phone:</span>
-                                <span className="text-sm text-gray-600">{profile.contact_no}</span>
-                            </div>
-                        </div>
-
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-2">
-                                <MapPin className="w-4 h-4 text-gray-500" />
-                                <span className="text-sm font-medium">Location:</span>
-                                <span className="text-sm text-gray-600">{profile.city}, {profile.state}</span>
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                                <Calendar className="w-4 h-4 text-gray-500" />
-                                <span className="text-sm font-medium">DOB:</span>
-                                <span className="text-sm text-gray-600">{new Date(profile.dob).toLocaleDateString()}</span>
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium">Pincode:</span>
-                                <span className="text-sm text-gray-600">{profile.pincode}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {profile.approval_status === 'pending' && (
-                    <div className="text-center space-y-4">
-                        <button
-                            onClick={handleBackToLogin}
-                            className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-md transition"
-                        >
-                            Back to Login
-                        </button>
-
-                        <button
-                            onClick={async () => {
-                                console.log("Manual profile check:");
-                                const { data, error } = await supabase
-                                    .from('user_profiles')
-                                    .select('*')
-                                    .eq('user_id', user?.id)
-                                    .single();
-                                console.log("Current profile in database:", { data, error });
-                            }}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition"
-                        >
-                            Check Profile Status
-                        </button>
-
-                        <p className="text-gray-500 text-sm">
-                            You can check this page again later to see your approval status.
-                        </p>
-                    </div>
-                )}
-
-                {profile.approval_status === 'approved' && (
-                    <div className="text-center">
-                        <button
-                            onClick={() => navigate("/")}
-                            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md transition"
-                        >
-                            Go to Dashboard
-                        </button>
-                    </div>
-                )}
-
-                {profile.approval_status === 'rejected' && (
-                    <div className="text-center space-y-4">
-                        <button
-                            onClick={handleBackToLogin}
-                            className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-md transition"
-                        >
-                            Back to Login
-                        </button>
-
-                        <p className="text-gray-500 text-sm">
-                            Your application has been rejected. Please contact support for more information.
-                        </p>
-                    </div>
-                )}
             </div>
-        </div>
+            {/* New user setup modal removed */}
+        </>
     );
 };
 

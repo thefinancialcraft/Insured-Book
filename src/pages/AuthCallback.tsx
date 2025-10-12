@@ -77,29 +77,61 @@ const AuthCallback = () => {
           console.log("No user found after auth loading, checking session...");
           updateDebugStep('auth', 'loading', 'Checking active session...');
           
-          // Get current session
-          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-          
-          if (session) {
-            console.log("Session found, attempting to refresh...");
-            // Try to refresh the session
-            const { data: { user: refreshedUser }, error: refreshError } = await supabase.auth.refreshSession();
-            if (refreshedUser) {
-              console.log("Session refreshed successfully");
-              return; // Let the useEffect run again with the refreshed user
+          try {
+            // First try to get hash params from sessionStorage (set by handleMobileHashFragment)
+            const tempAccessToken = sessionStorage.getItem('temp_access_token');
+            const tempRefreshToken = sessionStorage.getItem('temp_refresh_token');
+            
+            if (tempAccessToken) {
+              console.log("Found temporary access token, attempting to set session...");
+              updateDebugStep('auth', 'loading', 'Setting session from mobile auth...');
+              
+              // Set the session manually using the tokens
+              const { data: { user: setUser }, error: setError } = await supabase.auth.setSession({
+                access_token: tempAccessToken,
+                refresh_token: tempRefreshToken || ''
+              });
+              
+              if (setUser) {
+                console.log("Session set successfully from mobile auth");
+                // Clean up temporary storage
+                sessionStorage.removeItem('temp_access_token');
+                sessionStorage.removeItem('temp_refresh_token');
+                return; // Let useEffect run again with the new user
+              }
             }
-          }
-          
-          updateDebugStep('auth', 'error', 'No active session found');
-          if (retryCount < 3) {
-            // Retry a few times for mobile devices with increased delay
-            console.log("Retrying...");
-            updateDebugStep('auth', 'loading', `Retry attempt ${retryCount + 1} of 3...`);
-            setRetryCount(prev => prev + 1);
-            setTimeout(() => {
-              setLoading(true);
-            }, getMobileDelay() * 3); // Increased delay for mobile
-            return;
+            
+            // If no temporary tokens or setting session failed, try getting current session
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+            
+            if (session) {
+              console.log("Session found, attempting to refresh...");
+              updateDebugStep('auth', 'loading', 'Refreshing existing session...');
+              
+              // Try to refresh the session
+              const { data: { user: refreshedUser }, error: refreshError } = await supabase.auth.refreshSession();
+              if (refreshedUser) {
+                console.log("Session refreshed successfully");
+                return; // Let the useEffect run again with the refreshed user
+              }
+            }
+            
+            // If we reach here, no valid session was found
+            updateDebugStep('auth', 'error', 'No active session found');
+            if (retryCount < 3) {
+              // Retry a few times with increased delay each time
+              console.log("Retrying...");
+              const delay = getMobileDelay() * (retryCount + 2); // Progressive delay
+              updateDebugStep('auth', 'loading', `Retry attempt ${retryCount + 1} of 3 (waiting ${delay}ms)...`);
+              setRetryCount(prev => prev + 1);
+              setTimeout(() => {
+                setLoading(true);
+              }, delay);
+              return;
+            }
+          } catch (error) {
+            console.error("Error during session handling:", error);
+            updateDebugStep('auth', 'error', 'Error checking session status');
           }
           setError("Authentication failed. Please try logging in again.");
           setLoading(false);

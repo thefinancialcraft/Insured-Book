@@ -39,13 +39,19 @@ const LoginPage = () => {
     localStorage.setItem(RECENT_USERS_KEY, JSON.stringify(updated));
   };
 
-  // On card click: autofill email, focus password
+  // On card click: if Google user, trigger Google sign-in; else autofill email
   const handleRecentUserClick = (user) => {
-    setFormData(f => ({ ...f, email: user.email }));
-    setTimeout(() => {
-      const pw = document.getElementById("password");
-      if (pw) pw.focus();
-    }, 100);
+    if (user.avatar_url) {
+      // Google user: trigger Google sign-in
+      handleGoogleSignIn();
+    } else {
+      // Email user: autofill and focus password
+      setFormData(f => ({ ...f, email: user.email }));
+      setTimeout(() => {
+        const pw = document.getElementById("password");
+        if (pw) pw.focus();
+      }, 100);
+    }
   };
 
   // Check for deletion message from navigation state

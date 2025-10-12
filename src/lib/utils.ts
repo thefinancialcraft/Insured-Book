@@ -11,17 +11,30 @@ export function handleMobileHashFragment() {
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
   if (isMobile && window.location.hash) {
-    // For mobile devices, we might need to handle hash fragments differently
+    // For mobile devices, handle hash fragments more carefully
     console.log("Mobile device detected with hash fragment:", window.location.hash);
 
-    // Extract access token from hash if present
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const accessToken = hashParams.get('access_token');
+    try {
+      // Extract all auth related params from hash
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = hashParams.get('access_token');
+      const refreshToken = hashParams.get('refresh_token');
+      const expiresIn = hashParams.get('expires_in');
+      const provider = hashParams.get('provider');
 
-    if (accessToken) {
-      console.log("Access token found in hash fragment");
-      // Store the token temporarily if needed
-      sessionStorage.setItem('temp_access_token', accessToken);
+      if (accessToken) {
+        console.log("Access token found in hash fragment");
+        // Store all auth related data
+        sessionStorage.setItem('temp_access_token', accessToken);
+        if (refreshToken) sessionStorage.setItem('temp_refresh_token', refreshToken);
+        if (expiresIn) sessionStorage.setItem('temp_expires_in', expiresIn);
+        if (provider) sessionStorage.setItem('temp_provider', provider);
+        
+        // Trigger a session refresh
+        window.dispatchEvent(new Event('supabase.auth.token-refreshed'));
+      }
+    } catch (error) {
+      console.error("Error handling mobile hash fragment:", error);
     }
 
     // Clean up the URL hash to prevent issues

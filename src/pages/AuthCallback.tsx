@@ -72,18 +72,33 @@ const AuthCallback = () => {
           return;
         }
 
-        // If no user after auth is ready, show error
+        // If no user after auth is ready, check session and retry
         if (!user) {
-          console.log("No user found after auth loading");
-          updateDebugStep('auth', 'error', 'No user found in session');
+          console.log("No user found after auth loading, checking session...");
+          updateDebugStep('auth', 'loading', 'Checking active session...');
+          
+          // Get current session
+          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+          
+          if (session) {
+            console.log("Session found, attempting to refresh...");
+            // Try to refresh the session
+            const { data: { user: refreshedUser }, error: refreshError } = await supabase.auth.refreshSession();
+            if (refreshedUser) {
+              console.log("Session refreshed successfully");
+              return; // Let the useEffect run again with the refreshed user
+            }
+          }
+          
+          updateDebugStep('auth', 'error', 'No active session found');
           if (retryCount < 3) {
-            // Retry a few times for mobile devices
+            // Retry a few times for mobile devices with increased delay
             console.log("Retrying...");
             updateDebugStep('auth', 'loading', `Retry attempt ${retryCount + 1} of 3...`);
             setRetryCount(prev => prev + 1);
             setTimeout(() => {
               setLoading(true);
-            }, getMobileDelay() * 2);
+            }, getMobileDelay() * 3); // Increased delay for mobile
             return;
           }
           setError("Authentication failed. Please try logging in again.");

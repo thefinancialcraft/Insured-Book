@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Eye, EyeOff, Mail, Lock, AlertCircle, Loader2 } from "lucide-react";
+
+const RECENT_USERS_KEY = "recent_login_users";
 
 const LoginPage = () => {
   const { signIn } = useAuth();
@@ -15,6 +18,35 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [recentUsers, setRecentUsers] = useState([]);
+
+  // Load recent users from localStorage
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(RECENT_USERS_KEY);
+      if (stored) {
+        setRecentUsers(JSON.parse(stored));
+      }
+    } catch {}
+  }, []);
+
+  // Add a user to recent users (max 5, most recent first)
+  const addRecentUser = (user) => {
+    if (!user?.email) return;
+    let updated = [user, ...recentUsers.filter(u => u.email !== user.email)];
+    if (updated.length > 5) updated = updated.slice(0, 5);
+    setRecentUsers(updated);
+    localStorage.setItem(RECENT_USERS_KEY, JSON.stringify(updated));
+  };
+
+  // On card click: autofill email, focus password
+  const handleRecentUserClick = (user) => {
+    setFormData(f => ({ ...f, email: user.email }));
+    setTimeout(() => {
+      const pw = document.getElementById("password");
+      if (pw) pw.focus();
+    }, 100);
+  };
 
   // Check for deletion message from navigation state
   useEffect(() => {
@@ -143,6 +175,12 @@ const LoginPage = () => {
       }
 
       if (authData?.user) {
+        // Store in recent users
+        addRecentUser({
+          email: authData.user.email,
+          user_name: authData.user.user_metadata?.full_name || authData.user.email,
+          avatar_url: authData.user.user_metadata?.avatar_url || "",
+        });
         console.log("=== USER AUTHENTICATED SUCCESSFULLY ===");
         console.log("User ID:", authData.user.id);
         console.log("User email:", authData.user.email);
@@ -354,6 +392,32 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-purple-50 to-blue-50 px-4 py-8">
       <div className="w-full max-w-md p-6 md:p-8 bg-white/90 rounded-2xl shadow-xl border border-white/50">
+        {/* Recent Users */}
+        {recentUsers.length > 0 && (
+          <div className="mb-6">
+            <div className="mb-2 text-xs text-gray-500 font-medium">Past Logins</div>
+            <div className="flex gap-3 overflow-x-auto pb-2">
+              {recentUsers.map((u, i) => (
+                <button
+                  key={u.email}
+                  type="button"
+                  onClick={() => handleRecentUserClick(u)}
+                  className="flex flex-col items-center px-2 py-1 rounded-lg border border-gray-200 bg-gray-50 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition"
+                  tabIndex={0}
+                >
+                  <Avatar className="h-10 w-10 mb-1">
+                    {u.avatar_url ? (
+                      <AvatarImage src={u.avatar_url} alt={u.user_name || u.email} />
+                    ) : (
+                      <AvatarFallback>{(u.user_name || u.email)[0]?.toUpperCase()}</AvatarFallback>
+                    )}
+                  </Avatar>
+                  <span className="text-xs font-medium text-gray-700 max-w-[70px] truncate">{u.user_name || u.email}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="flex flex-col items-center mb-7">
           <span className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-indigo-50 mb-2">
             <svg className="w-8 h-8 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">

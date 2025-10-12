@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+const RECENT_USERS_KEY = "recent_login_users";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -137,6 +138,25 @@ const AuthCallback = () => {
           setLoading(false);
           return;
         }
+
+
+        // Store Google user in localStorage for recent login cards
+        try {
+          if (user?.email) {
+            const newUser = {
+              email: user.email,
+              user_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email,
+              avatar_url: user.user_metadata?.avatar_url || "",
+            };
+            let prev = [];
+            try {
+              prev = JSON.parse(localStorage.getItem(RECENT_USERS_KEY) || "[]");
+            } catch {}
+            let updated = [newUser, ...prev.filter(u => u.email !== newUser.email)];
+            if (updated.length > 5) updated = updated.slice(0, 5);
+            localStorage.setItem(RECENT_USERS_KEY, JSON.stringify(updated));
+          }
+        } catch (e) { console.error("Failed to save recent user", e); }
 
         updateDebugStep('auth', 'completed', `User authenticated: ${user.email}`);
         console.log("User authenticated, fetching profile...");

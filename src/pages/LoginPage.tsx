@@ -394,25 +394,28 @@ const LoginPage = () => {
       <div className="w-full max-w-md p-6 md:p-8 bg-white/90 rounded-2xl shadow-xl border border-white/50">
         {/* Recent Users */}
         {recentUsers.length > 0 && (
-          <div className="mb-6">
-            <div className="mb-2 text-xs text-gray-500 font-medium">Past Logins</div>
-            <div className="flex gap-3 overflow-x-auto pb-2">
+          <div className="mb-8">
+            <div className="mb-3 text-sm text-gray-600 font-semibold text-center">Past Logins</div>
+            <div className="flex gap-6 justify-center overflow-x-auto pb-2">
               {recentUsers.map((u, i) => (
                 <button
                   key={u.email}
                   type="button"
                   onClick={() => handleRecentUserClick(u)}
-                  className="flex flex-col items-center px-2 py-1 rounded-lg border border-gray-200 bg-gray-50 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition"
+                  className="flex flex-col items-center px-4 py-3 rounded-xl shadow-md bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-300 transition group min-w-[100px] border-0"
                   tabIndex={0}
+                  style={{ minWidth: 110 }}
                 >
-                  <Avatar className="h-10 w-10 mb-1">
+                  <Avatar className="h-16 w-16 mb-2 shadow group-hover:scale-105 transition-transform">
                     {u.avatar_url ? (
                       <AvatarImage src={u.avatar_url} alt={u.user_name || u.email} />
                     ) : (
-                      <AvatarFallback>{(u.user_name || u.email)[0]?.toUpperCase()}</AvatarFallback>
+                      <AvatarFallback className="text-2xl">{(u.user_name || u.email)[0]?.toUpperCase()}</AvatarFallback>
                     )}
                   </Avatar>
-                  <span className="text-xs font-medium text-gray-700 max-w-[70px] truncate">{u.user_name || u.email}</span>
+                  <span className="text-sm font-semibold text-gray-800 max-w-[90px] truncate text-center">
+                    {u.user_name || u.email}
+                  </span>
                 </button>
               ))}
             </div>
